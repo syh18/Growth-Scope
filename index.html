@@ -550,7 +550,8 @@ async function ensureWorkspace(){
   if(createError) throw createError;
 
   workspace = newWs;
-  window.currentWorkspaceRole = 'owner';
+  currentWorkspaceRole = 'owner';
+  window.currentWorkspaceRole = currentWorkspaceRole;
   return newWs;
 }
 async function loadCloudData(){
@@ -571,7 +572,7 @@ async function init(){
   const {data:{session}}=await db.auth.getSession();
   if(session?.user) await bootUser(session.user); else setAuthVisible(true);
   db.auth.onAuthStateChange(async(event,session)=>{
-    if(session?.user){await bootUser(session.user)}else{currentUser=null;workspace=null;data=[];plans=[];setAuthVisible(true)}
+    if(session?.user){await bootUser(session.user)}else{currentUser=null;workspace=null;currentWorkspaceRole=null;data=[];plans=[];setAuthVisible(true)}
   });
 }
 async function login(e){
