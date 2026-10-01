@@ -250,7 +250,7 @@
 <section id="ai" class="page">
  <div class="card ai-hero">
   <h2>✨ GrowthScope AI Studio</h2>
-  <p>Gunakan data workspace untuk mendapatkan analisis, rekomendasi, ide konten, dan draft caption. Versi ini berjalan langsung di browser tanpa API key.</p>
+  <p>Gunakan data workspace untuk mendapatkan analisis, rekomendasi, ide konten, dan caption yang benar-benar digenerate AI berdasarkan data kamu.</p>
   <div class="ai-actions">
    <button class="btn" style="background:#fff;color:#4f46e5" onclick="aiAnalyze()">Analyze My Content</button>
    <button class="btn" style="background:#fff;color:#4f46e5" onclick="aiIdeas()">Generate Ideas</button>
@@ -624,32 +624,73 @@ function renderSmartRecommendation(){
   if(!rec.length)rec.push('Data masih terbatas. Tambahkan beberapa konten lagi agar pola yang muncul lebih kuat.');
   box.innerHTML='<ul class="ai-list">'+rec.slice(0,3).map(x=>'<li>'+x+'</li>').join('')+'</ul>';
 }
-function aiAnalyze(){
+async function callGrowthScopeAI(mode, extra={}){
+  const payload={
+    mode,
+    workspace:{name:workspace?.name||'Workspace',description:workspace?.description||''},
+    content:data.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).slice(0,40).map(x=>({
+      date:x.date,platform:x.platform,title:x.title,pillar:x.pillar,format:x.format,hook:x.hook,cta:x.cta,
+      reach:n(x.reach),views:n(x.views),likes:n(x.likes),comments:n(x.comments),shares:n(x.shares),saves:n(x.saves),
+      er:Number((calc({...x}).er||0).toFixed(4))
+    })),
+    ...extra
+  };
+  const {data:result,error}=await db.functions.invoke('growthscope-ai',{body:payload});
+  if(error) throw new Error(error.message||'AI request gagal.');
+  if(result?.error) throw new Error(result.error);
+  return result;
+}
+function parseAIJson(text){
+  try{return JSON.parse(text)}catch{}
+  const cleaned=String(text||'').replace(/^\s*\`\`\`json\s*/,'').replace(/\s*\`\`\`\s*$/,'').trim();
+  try{return JSON.parse(cleaned)}catch{return null}
+}
+function aiLoading(box,label='AI sedang menganalisis...'){
+  box.innerHTML=`<div class="loading" style="padding:18px;text-align:center">✨ ${esc(label)}</div>`;
+}
+async function aiAnalyze(){
   const box=document.getElementById('aiAnalysisBox'); if(!box)return;
   if(!data.length){box.innerHTML='<div class="empty">Belum ada data untuk dianalisis.</div>';return}
-  const a=averages(),top=data.slice().sort((x,y)=>score(y,a)-score(x,a))[0],low=data.slice().sort((x,y)=>score(x,a)-score(y,a))[0],p=best('pillar'),f=best('format'),h=best('hook'),scale=data.filter(x=>diagnosis(x,a)==='SCALE').length;
-  box.innerHTML=`<h3>Workspace Performance Insight</h3><ul class="ai-list"><li><b>${data.length}</b> konten dianalisis dengan benchmark rata-rata workspace.</li><li>Pola pillar terbaik berdasarkan ER saat ini: <b>${esc(p)}</b>.</li><li>Format dengan ER terbaik saat ini: <b>${esc(f)}</b>.</li><li>Hook dengan ER terbaik saat ini: <b>${esc(h)}</b>.</li><li><b>${scale}</b> konten masuk kategori SCALE.</li><li>Konten dengan score tertinggi: <b>${esc(top?.title||'-')}</b> (${score(top,a)}/100).</li><li>Konten yang perlu dievaluasi lebih dulu: <b>${esc(low?.title||'-')}</b> (${score(low,a)}/100).</li></ul>`;
+  aiLoading(box,'AI sedang membaca pola konten workspace kamu...');
+  try{
+    const r=await callGrowthScopeAI('analysis');
+    const j=parseAIJson(r.text);
+    if(!j){box.innerHTML=`<div style="white-space:pre-wrap">${esc(r.text)}</div>`;return}
+    box.innerHTML=`<h3>${esc(j.summary||'Workspace Performance Insight')}</h3>
+      <ul class="ai-list">${(j.patterns||[]).map(p=>`<li><b>${esc(p.finding)}</b><br><span class="mini-stat">Evidence: ${esc(p.evidence)} · Impact: ${esc(p.implication)}</span></li>`).join('')}</ul>
+      <div style="margin-top:12px"><b>Next Actions</b><ul class="ai-list">${(j.actions||[]).map(a=>`<li><b>${esc(a.priority)}</b> — ${esc(a.action)}<br><span class="mini-stat">${esc(a.reason)}</span></li>`).join('')}</ul></div>`;
+  }catch(err){box.innerHTML=`<div class="notice" style="color:#991b1b">AI belum bisa digunakan: ${esc(err.message)}</div>`;}
 }
-function aiIdeas(){
+async function aiIdeas(){
   const box=document.getElementById('aiIdeasBox');if(!box)return;
-  const platform=document.getElementById('aiPlatform')?.value||'Instagram',goal=document.getElementById('aiGoal')?.value||'Engagement',tone=document.getElementById('aiTone')?.value||'Gen Z',pillar=data.length?best('pillar'):'Education';
-  const ideas=[['Kesalahan yang paling sering terjadi','Problem','Save'],['3 tips praktis yang bisa langsung dicoba','Listicle','Share'],['Mitos vs fakta yang masih sering dipercaya','Question','Comment'],['Behind the scenes proses membuat konten','Storytelling','Comment'],['Checklist sebelum posting konten','Tutorial','Save']];
-  box.innerHTML=ideas.map((v,i)=>`<div class="idea-card"><b>${i+1}. ${v[0]}</b><div class="mini-stat">${platform} · ${goal} · ${tone} · Pillar: ${esc(pillar)}</div><div style="margin-top:6px">Hook: <b>${v[1]}</b> · CTA: <b>${v[2]}</b></div></div>`).join('');
+  aiLoading(box,'AI sedang menciptakan ide yang spesifik untuk workspace kamu...');
+  const platform=document.getElementById('aiPlatform')?.value||'Instagram';
+  const goal=document.getElementById('aiGoal')?.value||'Engagement';
+  const tone=document.getElementById('aiTone')?.value||'Gen Z';
+  const pillar=data.length?best('pillar'):'Education';
+  try{
+    const r=await callGrowthScopeAI('ideas',{platform,goal,tone,pillar});
+    const j=parseAIJson(r.text);
+    if(!j?.ideas){box.innerHTML=`<div style="white-space:pre-wrap">${esc(r.text)}</div>`;return}
+    box.innerHTML=j.ideas.map((v,i)=>`<div class="idea-card"><b>${i+1}. ${esc(v.title)}</b><div class="mini-stat">${esc(platform)} · ${esc(v.format)} · Pillar: ${esc(pillar)}</div><div style="margin-top:6px"><b>Angle:</b> ${esc(v.angle)}<br><b>Hook:</b> ${esc(v.hook)}<br><b>CTA:</b> ${esc(v.cta)}</div><div class="mini-stat" style="margin-top:6px">${esc(v.why_it_fits)}</div></div>`).join('');
+  }catch(err){box.innerHTML=`<div class="notice" style="color:#991b1b">AI belum bisa digunakan: ${esc(err.message)}</div>`;}
 }
-function aiCaption(){
+async function aiCaption(){
   const box=document.getElementById('aiCaptionBox');if(!box)return;
-  const topic=document.getElementById('aiCaptionTopic')?.value.trim()||'topik konten kamu',platform=document.getElementById('aiCaptionPlatform')?.value||'Instagram',goal=document.getElementById('aiCaptionGoal')?.value||'Engagement',tone=document.getElementById('aiCaptionTone')?.value||'Gen Z';
-  box.innerHTML=`<h3>${esc(topic)}</h3><div style="white-space:pre-wrap">HOOK
-${esc(topic)} masih sering bikin orang salah paham? 👀
-
-BODY
-Di ${platform}, konten yang simpel, relevan, dan langsung ke masalah biasanya lebih mudah dipahami.
-Kalau goal-nya ${goal.toLowerCase()}, coba bahas topik ini dengan contoh yang dekat dengan audiens.
-
-CTA
-Menurut kamu, bagian mana yang paling relate? Tulis di komentar 👇
-
-Tone: ${esc(tone)}</div><div class="ai-actions"><button class="btn light" onclick="navigator.clipboard?.writeText(document.getElementById('aiCaptionBox').innerText)">Copy Caption</button></div>`;
+  const topic=document.getElementById('aiCaptionTopic')?.value.trim();
+  const platform=document.getElementById('aiCaptionPlatform')?.value||'Instagram';
+  const goal=document.getElementById('aiCaptionGoal')?.value||'Engagement';
+  const tone=document.getElementById('aiCaptionTone')?.value||'Gen Z';
+  if(!topic){box.innerHTML='<div class="empty">Masukkan topik dulu supaya AI bisa membuat caption yang spesifik.</div>';return}
+  aiLoading(box,'AI sedang menulis caption original...');
+  try{
+    const r=await callGrowthScopeAI('caption',{topic,platform,goal,tone});
+    const j=parseAIJson(r.text);
+    if(!j){box.innerHTML=`<div style="white-space:pre-wrap">${esc(r.text)}</div>`;return}
+    const hashtags=Array.isArray(j.hashtags)?j.hashtags.join(' '):'';
+    const full=[j.hook,j.body,j.cta,hashtags].filter(Boolean).join('\n\n');
+    box.innerHTML=`<h3>${esc(topic)}</h3><div id="generatedCaptionText" style="white-space:pre-wrap">${esc(full)}</div><div class="ai-actions"><button class="btn light" onclick="navigator.clipboard?.writeText(document.getElementById('generatedCaptionText').innerText)">Copy Caption</button></div>`;
+  }catch(err){box.innerHTML=`<div class="notice" style="color:#991b1b">AI belum bisa digunakan: ${esc(err.message)}</div>`;}
 }
 function renderPlanner(){
   const tb=document.getElementById('plannerTable');
