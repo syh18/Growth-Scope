@@ -366,6 +366,12 @@
   <button onclick="mobileNavigate('matrix')">✦ Performance Matrix</button>
   <button onclick="mobileNavigate('recommendations')">◎ Recommendations</button>
   <button onclick="mobileNavigate('workspace')">👥 Workspace</button>
+  <button onclick="exportJSON();toggleMobileMore()">⇩ Export JSON</button>
+  <button onclick="document.getElementById('importFile').click();toggleMobileMore()">⇧ Import Backup</button>
+  <button onclick="document.getElementById('importCSVFile').click();toggleMobileMore()">⇧ Import CSV</button>
+  <button onclick="downloadCSVTemplate();toggleMobileMore()">▤ CSV Template</button>
+  <button onclick="exportCSV();toggleMobileMore()">⇩ Export CSV</button>
+  <button onclick="clearAllData();toggleMobileMore()">🗑 Clear Data</button>
   <button onclick="toggleMobileMore()">✕ Tutup</button>
 </div>
 </main>
