@@ -1,0 +1,22 @@
+{
+  "name": "GrowthScope",
+  "short_name": "GrowthScope",
+  "description": "AI-powered social media decision intelligence.",
+  "lang": "id",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f7f8fc",
+  "theme_color": "#101828",
+  "categories": ["business", "productivity", "social"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
