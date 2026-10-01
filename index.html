@@ -1,2 +1,751 @@
 <!DOCTYPE html>
-PLACEHOLDER
+<html lang="id">
+<head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+#authScreen{position:fixed;inset:0;background:linear-gradient(135deg,#101828 0%,#1f2a44 55%,#635bff 130%);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999}#authScreen.hidden{display:none}.auth-box{width:min(440px,100%);background:#fff;border-radius:20px;padding:30px;box-shadow:0 25px 70px rgba(0,0,0,.25)}.auth-logo{font-size:25px;font-weight:900;color:#172033}.auth-logo span{display:block;color:#718096;font-size:12px;font-weight:500;margin-top:3px}.auth-box h2{margin:24px 0 7px;font-size:24px}.auth-box p{color:#718096;font-size:13px;line-height:1.6}.auth-form{display:grid;gap:12px;margin-top:18px}.auth-field label{font-size:12px;color:#718096;display:block;margin-bottom:6px}.auth-field input{width:100%;padding:12px;border:1px solid #e7ebf2;border-radius:9px;outline:none}.auth-field input:focus{border-color:#635bff;box-shadow:0 0 0 3px rgba(99,91,255,.1)}.auth-actions{display:grid;gap:9px;margin-top:8px}.auth-msg{font-size:12px;padding:10px 12px;border-radius:8px;display:none}.auth-msg.show{display:block}.auth-msg.error{background:#fee2e2;color:#991b1b}.auth-msg.success{background:#dcfce7;color:#166534}.auth-switch{text-align:center;margin-top:15px;font-size:12px;color:#718096}.auth-switch button{border:0;background:none;color:#635bff;font-weight:700;cursor:pointer}.cloud-badge{display:inline-block;background:#dcfce7;color:#166534;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:800;margin-left:6px;vertical-align:middle}.user-chip{display:flex;align-items:center;gap:8px}.user-email{font-size:12px;color:#718096}.logout-btn{font-size:12px;padding:8px 11px}.loading{opacity:.65;pointer-events:none}
+</style>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>GrowthScope — Social Media Growth Analyzer</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#718096;--line:#e7ebf2;--accent:#635bff;--green:#16a34a;--red:#dc2626;--orange:#d97706;--shadow:0 10px 30px rgba(23,32,51,.07)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
+.app{display:flex;min-height:100vh}.side{width:245px;background:#101828;color:#fff;padding:24px 16px;position:fixed;height:100vh}.brand{font-weight:800;font-size:18px;margin:0 10px 28px}.brand span{display:block;color:#aab3c5;font-size:11px;font-weight:500;margin-top:4px}.nav button{width:100%;border:0;background:transparent;color:#aeb7c8;text-align:left;padding:12px 13px;border-radius:10px;margin:3px 0;cursor:pointer;font-size:14px}.nav button.active,.nav button:hover{background:#202b41;color:#fff}.main{margin-left:245px;width:calc(100% - 245px);padding:30px;max-width:1500px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.top h1{margin:0;font-size:27px}.top p{color:var(--muted);margin:6px 0 0}.actions{display:flex;gap:8px}.btn{border:0;border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:700}.primary{background:var(--accent);color:#fff}.light{background:#fff;border:1px solid var(--line);color:var(--text)}.danger{background:#fee2e2;color:#991b1b}.page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow)}.metric .label{font-size:12px;color:var(--muted)}.metric .value{font-size:27px;font-weight:800;margin:8px 0}.up{color:var(--green);font-size:12px}.down{color:var(--red);font-size:12px}.section{margin-top:18px}.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.section-title h2{font-size:17px;margin:0}.two{display:grid;grid-template-columns:1.4fr 1fr;gap:15px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;font-size:13px}.table th,.table td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.table th{color:var(--muted);font-size:11px;text-transform:uppercase}.pill{padding:5px 9px;border-radius:999px;font-size:11px;font-weight:700;display:inline-block}.good{background:#dcfce7;color:#166534}.warn{background:#fef3c7;color:#92400e}.bad{background:#fee2e2;color:#991b1b}.form{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.field label{font-size:11px;color:var(--muted);display:block;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;outline:none}.field textarea{min-height:80px}.full{grid-column:1/-1}.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}.score{font-size:52px;font-weight:900;text-align:center}.score-label{text-align:center;color:var(--green);font-weight:800}.bar{height:8px;background:#edf0f5;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}.row{display:flex;justify-content:space-between;font-size:12px;margin:12px 0 6px}.matrix{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.matrix div{min-height:125px;border-radius:12px;padding:15px}.scale{background:#dcfce7}.gem{background:#e0e7ff}.opt{background:#fef3c7}.rework{background:#fee2e2}.matrix b{display:block;margin-bottom:6px}.empty{padding:35px;text-align:center;color:var(--muted)}.notice{background:#eef2ff;border:1px solid #dfe4ff;padding:14px;border-radius:10px;color:#3730a3;font-size:13px}.tag{display:inline-block;background:#f1f3f7;padding:5px 8px;border-radius:6px;margin:3px;font-size:11px}.rec{border-left:4px solid var(--accent);background:#fafaff;padding:14px;border-radius:8px;margin-bottom:10px}.rec strong{display:block;margin-bottom:4px}.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}.modal-box{background:#fff;border-radius:15px;padding:22px;width:min(850px,100%);max-height:90vh;overflow:auto}.modal-head{display:flex;justify-content:space-between;align-items:center}.modal-head h2{margin:0}
+@media(max-width:950px){.side{width:70px}.brand{font-size:0}.brand:before{content:"GS";font-size:18px}.nav button{font-size:0;text-align:center}.main{margin-left:70px;width:calc(100% - 70px);padding:18px}.grid{grid-template-columns:repeat(2,1fr)}.two,.three,.form{grid-template-columns:1fr}.form .full{grid-column:auto}}
+/* V7 enhancements */
+.user-avatar-top,.profile-avatar{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#eef0ff;color:#635bff;font-weight:800;overflow:hidden;flex:0 0 auto}
+.user-avatar-top img,.profile-avatar img{width:100%;height:100%;object-fit:cover}
+.user-name-top{font-weight:700;color:#172033;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.matrix-guide{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.guide-item{padding:12px;border:1px solid #e7ebf2;border-radius:12px;background:#fafbfe}
+.guide-item p{font-size:12px;color:#718096;line-height:1.5;margin:7px 0 0}
+.score-guide{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.score-guide>div{padding:12px;border:1px solid #e7ebf2;border-radius:10px}
+.score-guide b{display:block;font-size:20px}
+.score-guide span{font-size:12px;color:#718096}
+.profile-preview{display:flex;align-items:center;gap:12px;margin-top:12px;padding:14px;border:1px solid #e7ebf2;border-radius:12px}
+@media(max-width:800px){.matrix-guide{grid-template-columns:1fr}.user-name-top{display:none}}
+</style>
+</head>
+<body>
+<div id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">GrowthScope <span>Social Media Growth Analyzer · Cloud</span></div>
+    <div id="loginPanel">
+      <h2>Login ke GrowthScope</h2><p>Masuk untuk mengakses workspace dan data analitik yang tersimpan di cloud.</p>
+      <form id="loginForm" class="auth-form">
+        <div class="auth-field"><label>Email</label><input id="loginEmail" type="email" required placeholder="nama@email.com"></div>
+        <div class="auth-field"><label>Password</label><input id="loginPassword" type="password" required placeholder="••••••••"></div>
+        <div id="loginMsg" class="auth-msg"></div>
+        <div class="auth-actions"><button class="btn primary" type="submit">Login</button></div>
+      </form>
+      <div class="auth-switch">Belum punya akun? <button type="button" onclick="showRegister()">Daftar sekarang</button></div>
+    </div>
+    <div id="registerPanel" style="display:none">
+      <h2>Buat akun GrowthScope</h2><p>Buat akun untuk mengakses SMGA. Untuk testing saat ini, akun tidak perlu verifikasi email.</p>
+      <form id="registerForm" class="auth-form">
+        <div class="auth-field"><label>Nama</label><input id="registerName" required placeholder="Nama kamu"></div>
+        <div class="auth-field"><label>Email</label><input id="registerEmail" type="email" required placeholder="nama@email.com"></div>
+        <div class="auth-field"><label>Password</label><input id="registerPassword" type="password" minlength="6" required placeholder="Minimal 6 karakter"></div>
+        <div id="registerMsg" class="auth-msg"></div>
+        <div class="auth-actions"><button class="btn primary" type="submit">Buat Akun</button></div>
+      </form>
+      <div class="auth-switch">Sudah punya akun? <button type="button" onclick="showLogin()">Login</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+<aside class="side">
+  <div class="brand">GrowthScope <span>Social Media Growth Analyzer</span></div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard">◉ &nbsp; Dashboard</button>
+    <button data-page="database">▣ &nbsp; Content Database</button>
+    <button data-page="analytics">◈ &nbsp; Content Analytics</button>
+    <button data-page="matrix">✦ &nbsp; Performance Matrix</button>
+    <button data-page="recommendations">◎ &nbsp; Recommendations</button>
+    <button data-page="planner">☷ &nbsp; Content Planner</button>
+    <button data-page="workspace">👥 &nbsp; Workspace</button>
+  </nav>
+</aside>
+
+<main class="main">
+<header class="top">
+  <div><h1 id="pageTitle">Dashboard</h1><p>Measure. Understand. Improve.</p></div>
+  <div class="actions">
+    <div class="user-chip"><span class="cloud-badge">CLOUD</span><span id="userAvatarTop" class="user-avatar-top">S</span><span id="currentUserName" class="user-name-top"></span><span id="currentUserEmail" class="user-email"></span><button class="btn light logout-btn" onclick="logout()">Logout</button></div>
+    <button class="btn light" onclick="exportJSON()">Export JSON</button>
+    <button class="btn light" onclick="document.getElementById('importFile').click()">Import Backup</button>
+    <button class="btn light" onclick="document.getElementById('importCSVFile').click()">Import CSV</button>
+    <button class="btn light" onclick="downloadCSVTemplate()">CSV Template</button>
+    <input id="importCSVFile" type="file" accept=".csv,text/csv" style="display:none" onchange="importCSV(event)">
+    <button class="btn light" onclick="exportCSV()">Export CSV</button>
+    <button class="btn danger" onclick="clearAllData()">Clear Data</button>
+    <input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="importJSON(event)">
+    <button class="btn primary" onclick="openModal()">+ Add Content</button>
+  </div>
+</header>
+
+<section id="dashboard" class="page active">
+  <div class="notice" style="margin-bottom:15px"><b>☁️ Data Cloud:</b> data konten, planner, dan workspace tersimpan di Supabase dan terikat pada workspace yang sedang aktif.</div>
+  <div class="grid">
+    <div class="card metric"><div class="label">TOTAL CONTENT</div><div class="value" id="mContent">0</div><div class="up">Tracked posts</div></div>
+    <div class="card metric"><div class="label">TOTAL REACH</div><div class="value" id="mReach">0</div><div class="up">All tracked content</div></div>
+    <div class="card metric"><div class="label">AVG ENGAGEMENT</div><div class="value" id="mER">0%</div><div class="up">Average ER</div></div>
+    <div class="card metric"><div class="label">AVG SCORE</div><div class="value" id="mScore">0</div><div class="up">Content performance</div></div>
+  </div>
+  <div class="two section">
+    <div class="card"><div class="section-title"><h2>Performance Overview</h2></div><canvas id="chart" height="110"></canvas></div>
+    <div class="card"><div class="section-title"><h2>Top Content</h2></div><div id="topContent"></div></div>
+  </div>
+  <div class="three section">
+    <div class="card"><div class="section-title"><h2>Best Pillar</h2></div><div id="bestPillar" class="empty">No data</div></div>
+    <div class="card"><div class="section-title"><h2>Best Format</h2></div><div id="bestFormat" class="empty">No data</div></div>
+    <div class="card"><div class="section-title"><h2>Best Hook</h2></div><div id="bestHook" class="empty">No data</div></div>
+  </div>
+</section>
+
+<section id="database" class="page">
+ <div class="card">
+  <div class="section-title"><h2>Content Database</h2><button class="btn light" onclick="openModal()">+ Add Content</button></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Content</th><th>Pillar</th><th>Format</th><th>Reach</th><th>ER</th><th>Score</th><th>Diagnosis</th><th></th></tr></thead><tbody id="contentTable"></tbody></table></div>
+ </div>
+</section>
+
+<section id="analytics" class="page">
+ <div class="grid">
+  <div class="card"><div class="label">AVG LIKE RATE</div><div class="value" id="aLike">0%</div></div>
+  <div class="card"><div class="label">AVG COMMENT RATE</div><div class="value" id="aComment">0%</div></div>
+  <div class="card"><div class="label">AVG SHARE RATE</div><div class="value" id="aShare">0%</div></div>
+  <div class="card"><div class="label">AVG SAVE RATE</div><div class="value" id="aSave">0%</div></div>
+ </div>
+ <div class="two section">
+  <div class="card"><div class="section-title"><h2>Performance by Pillar</h2></div><div id="pillarTable"></div></div>
+  <div class="card"><div class="section-title"><h2>Performance by Format</h2></div><div id="formatTable"></div></div>
+ </div>
+</section>
+
+<section id="matrix" class="page">
+ <div class="card">
+  <div class="section-title"><h2>Content Performance Matrix</h2></div>
+  <div class="notice"><b>How to read:</b> SMGA membandingkan setiap konten dengan <b>rata-rata data workspace aktif</b>. Label matrix bersifat relatif, bukan nilai absolut.</div>
+  <div class="matrix">
+   <div class="scale"><b>🔥 SCALE</b><span>Reach ≥ average + ER ≥ average</span><div id="scaleList"></div></div>
+   <div class="gem"><b>💎 HIDDEN GEM</b><span>Reach &lt; average + ER ≥ average</span><div id="gemList"></div></div>
+   <div class="opt"><b>⚠️ OPTIMIZE</b><span>Reach ≥ average + ER &lt; average</span><div id="optList"></div></div>
+   <div class="rework"><b>🔄 REWORK</b><span>Reach &lt; average + ER &lt; average</span><div id="reworkList"></div></div>
+  </div>
+ </div>
+ <div class="two section">
+  <div class="card"><div class="section-title"><h2>Matrix Guide</h2></div>
+   <div class="matrix-guide">
+    <div class="guide-item"><b>🔥 SCALE</b><p>Distribusi dan engagement relatif tinggi. Gunakan sebagai pola untuk diuji ulang.</p></div>
+    <div class="guide-item"><b>💎 HIDDEN GEM</b><p>Engagement relatif tinggi tetapi reach rendah. Cari cara memperbesar packaging, hook, atau distribusi.</p></div>
+    <div class="guide-item"><b>⚠️ OPTIMIZE</b><p>Reach tinggi tetapi engagement rendah. Fokus pada hook, CTA, relevansi, dan struktur konten.</p></div>
+    <div class="guide-item"><b>🔄 REWORK</b><p>Reach dan engagement sama-sama rendah. Evaluasi ide, format, hook, dan eksekusi.</p></div>
+   </div>
+  </div>
+  <div class="card"><div class="section-title"><h2>Score Scale</h2></div>
+   <p style="color:#718096;margin-top:0">Bobot score SMGA:</p>
+   <div class="score-guide"><div><b>30%</b><span>Reach</span></div><div><b>35%</b><span>Engagement Rate</span></div><div><b>15%</b><span>Share Rate</span></div><div><b>20%</b><span>Save Rate</span></div></div>
+   <div class="notice" style="margin-top:14px"><b>Benchmark:</b> semua perbandingan menggunakan rata-rata konten di workspace aktif.</div>
+  </div>
+ </div>
+</section>
+
+<section id="recommendations" class="page">
+ <div class="card"><div class="section-title"><h2>Recommendation Engine</h2></div><div id="recommendationsList"></div></div>
+</section>
+
+<section id="planner" class="page">
+ <div class="card">
+  <div class="section-title"><div><h2>Content Planner</h2><div style="font-size:12px;color:#718096;margin-top:4px">Atur tanggal, jam, ide, format, hook, CTA, dan status konten.</div></div><button class="btn primary" onclick="openPlanModal()">+ Add Idea</button></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Topic</th><th>Pillar</th><th>Format</th><th>Hook</th><th>CTA</th><th>Status</th><th></th></tr></thead><tbody id="plannerTable"></tbody></table></div>
+ </div>
+</section>
+
+<section id="workspace" class="page">
+ <div class="grid">
+  <div class="card metric"><div class="label">WORKSPACE</div><div class="value" id="wsNameDisplay">My Workspace</div><div class="up">Cloud workspace</div></div>
+  <div class="card metric"><div class="label">MEMBERS</div><div class="value" id="memberCount">1</div><div class="up">Workspace members</div></div>
+  <div class="card metric"><div class="label">ROLE</div><div class="value" id="ownerRole">Owner</div><div class="up">Current user</div></div>
+  <div class="card metric"><div class="label">DATA MODE</div><div class="value">LOCAL</div><div class="up">Stored in Supabase</div></div>
+ </div>
+
+ <div class="two section">
+  <div class="card">
+   <div class="section-title"><h2>Workspace Settings</h2></div>
+   <div class="form" style="grid-template-columns:1fr">
+    <div class="field"><label>Workspace Name</label><input id="workspaceNameInput" placeholder="e.g. Zemangat Marketing"></div>
+    <div class="field"><label>Workspace Description</label><textarea id="workspaceDescInput" placeholder="Describe this workspace"></textarea></div>
+   </div>
+   <div class="form-actions"><button class="btn primary" onclick="saveWorkspace()">Save Workspace</button></div>
+  </div>
+
+  <div class="card">
+   <div class="section-title"><h2>Invite Member</h2></div>
+   <div class="notice">Undangan email akan menggunakan Supabase Auth + Edge Function. Tombol ini siap dihubungkan setelah fungsi invitation dideploy.</div>
+   <div class="form" style="grid-template-columns:1fr">
+    <div class="field"><label>Email / Username</label><input id="inviteEmail" placeholder="nama@email.com"></div>
+    <div class="field"><label>Role</label><select id="inviteRole"><option>Analyst</option><option>Viewer</option><option>Owner</option></select></div>
+   </div>
+   <div class="form-actions"><button class="btn primary" onclick="inviteMember()">+ Invite Member</button></div>
+  </div>
+ </div>
+
+ <div class="card section">
+  <div class="section-title"><h2>User Settings</h2></div>
+  <div class="two">
+   <div>
+    <div class="field"><label>Nama Tampilan</label><input id="profileNameInput" placeholder="Nama kamu"></div>
+    <div class="field" style="margin-top:12px"><label>Email</label><input id="profileEmailDisplay" disabled></div>
+    <div class="form-actions"><button type="button" class="btn primary" onclick="saveUserSettings()">Save Profile</button></div>
+   </div>
+   <div>
+    <div class="field"><label>Foto Profil / Avatar</label><input type="file" id="profileAvatarFile" accept="image/png,image/jpeg,image/webp" onchange="previewAvatarFile(event)"><div style="font-size:12px;color:#718096;margin-top:6px">Pilih foto dari perangkat (JPG, PNG, WebP). Foto diperkecil otomatis.</div></div><button type="button" class="btn light" style="margin-top:10px" onclick="removeProfileAvatar()">Hapus Foto</button>
+    <div class="profile-preview" id="profilePreview"><div id="profilePreviewAvatar" class="profile-avatar">S</div><div><b id="profilePreviewName">User</b><div id="profilePreviewEmail" style="font-size:12px;color:#718096"></div></div></div>
+   </div>
+  </div>
+ </div>
+
+<div class="card section">
+  <div class="section-title"><h2>Workspace Members</h2></div>
+  <div class="table-wrap">
+   <table class="table">
+    <thead><tr><th>Member</th><th>Role</th><th>Status</th><th>Access</th><th></th></tr></thead>
+    <tbody id="membersTable"></tbody>
+   </table>
+  </div>
+ </div>
+
+ <div class="card section">
+  <div class="section-title"><h2>Permission Matrix</h2></div>
+  <table class="table">
+   <thead><tr><th>Permission</th><th>Owner</th><th>Analyst</th><th>Viewer</th></tr></thead>
+   <tbody>
+    <tr><td>View Dashboard</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>View Analytics</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Add / Edit Content</td><td>✓</td><td>✓</td><td>—</td></tr>
+    <tr><td>Delete Content</td><td>✓</td><td>✓</td><td>—</td></tr>
+    <tr><td>Recommendations</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Content Planner</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Invite Members</td><td>✓</td><td>—</td><td>—</td></tr>
+    <tr><td>Workspace Settings</td><td>✓</td><td>—</td><td>—</td></tr>
+   </tbody>
+  </table>
+ </div>
+</section>
+</main>
+</div>
+
+<div class="modal" id="planModal">
+<div class="modal-box">
+ <div class="modal-head"><h2 id="planModalTitle">Add Planner Idea</h2><button class="btn light" onclick="closePlanModal()">✕</button></div>
+ <form id="planForm" onsubmit="savePlan(event)">
+  <input type="hidden" id="planEditId" value="">
+  <div class="form" style="margin-top:18px">
+   <div class="field"><label>Date</label><input type="date" id="planDate" required></div>
+   <div class="field"><label>Time</label><input type="time" id="planTime"></div>
+   <div class="field"><label>Platform</label><select id="planPlatform"><option>Instagram</option><option>TikTok</option><option>Facebook</option><option>LinkedIn</option><option>YouTube</option></select></div>
+   <div class="field"><label>Topic</label><input id="planTopic" required placeholder="Contoh: Tips CV ATS"></div>
+   <div class="field"><label>Pillar</label><input id="planPillar" placeholder="Contoh: Career"></div>
+   <div class="field"><label>Format</label><select id="planFormat"><option>Carousel</option><option>Reels</option><option>Single Image</option><option>Story</option><option>Video</option></select></div>
+   <div class="field"><label>Hook</label><select id="planHook"><option>Problem</option><option>Question</option><option>Curiosity</option><option>Statistic</option><option>Story</option></select></div>
+   <div class="field"><label>CTA</label><input id="planCTA" value="Save"></div>
+   <div class="field"><label>Status</label><select id="planStatus"><option value="idea">Idea</option><option value="draft">Draft</option><option value="ready">Ready</option><option value="published">Published</option></select></div>
+   <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea id="planNotes" placeholder="Catatan tambahan..."></textarea></div>
+  </div>
+  <div class="form-actions"><button type="button" class="btn light" onclick="closePlanModal()">Cancel</button><button class="btn primary">Save Planner</button></div>
+ </form>
+</div>
+</div>
+
+<div class="modal" id="modal">
+<div class="modal-box">
+ <div class="modal-head"><h2>Add Social Media Content</h2><button class="btn light" onclick="closeModal()">✕</button></div>
+ <form id="contentForm" onsubmit="saveContent(event)">
+  <input type="hidden" id="editId" value="">
+  <div class="form" style="margin-top:18px">
+   <div class="field"><label>Date</label><input type="date" id="fDate" required></div>
+   <div class="field"><label>Platform</label><select id="fPlatform"><option>Instagram</option><option>TikTok</option><option>Facebook</option><option>LinkedIn</option><option>YouTube</option></select></div>
+   <div class="field"><label>Content Title</label><input id="fTitle" required placeholder="e.g. Tips CV ATS"></div>
+   <div class="field"><label>Content Pillar</label><input id="fPillar" required placeholder="e.g. Career"></div>
+   <div class="field"><label>Format</label><select id="fFormat"><option>Reels</option><option>Carousel</option><option>Single Image</option><option>Story</option><option>Video</option></select></div>
+   <div class="field"><label>Hook</label><select id="fHook"><option>Problem</option><option>Question</option><option>Storytelling</option><option>Data/Fakta</option><option>Listicle</option><option>Tutorial</option><option>Direct Statement</option></select></div>
+   <div class="field"><label>CTA</label><select id="fCTA"><option>Save</option><option>Comment</option><option>Share</option><option>DM</option><option>Link Click</option><option>None</option></select></div>
+   <div class="field"><label>Reach</label><input type="number" id="fReach" min="0" value="0"></div>
+   <div class="field"><label>Views</label><input type="number" id="fViews" min="0" value="0"></div>
+   <div class="field"><label>Likes</label><input type="number" id="fLikes" min="0" value="0"></div>
+   <div class="field"><label>Comments</label><input type="number" id="fComments" min="0" value="0"></div>
+   <div class="field"><label>Shares</label><input type="number" id="fShares" min="0" value="0"></div>
+   <div class="field"><label>Saves</label><input type="number" id="fSaves" min="0" value="0"></div>
+   <div class="field"><label>Profile Visits</label><input type="number" id="fProfile" min="0" value="0"></div>
+   <div class="field"><label>Leads / Conversion</label><input type="number" id="fLeads" min="0" value="0"></div>
+  </div>
+  <div class="form-actions"><button type="button" class="btn light" onclick="closeModal()">Cancel</button><button class="btn primary">Save Content</button></div>
+ </form>
+</div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://urkvojeapkynydvnfxzr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_46VQ4kFktg5AJauL-0j5xg_TZNdpwmM";
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+let data = [];
+let plans = [];
+let workspace = null;
+let currentWorkspaceRole = null;
+let currentUser = null;
+
+const n=v=>Number(v)||0;
+const pct=v=>(n(v)*100).toFixed(2)+'%';
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const safeNumber=(v,fallback=0)=>{const x=Number(v);return Number.isFinite(x)?x:fallback};
+
+function calc(x){
+  const r=n(x.reach), e=n(x.likes)+n(x.comments)+n(x.shares)+n(x.saves);
+  x.er=r?e/r:0; x.likeRate=r?n(x.likes)/r:0; x.commentRate=r?n(x.comments)/r:0; x.shareRate=r?n(x.shares)/r:0; x.saveRate=r?n(x.saves)/r:0;
+  return x;
+}
+function averages(){
+  data.forEach(calc);
+  return {reach:avg(data.map(x=>n(x.reach))),er:avg(data.map(x=>n(x.er))),shareRate:avg(data.map(x=>n(x.shareRate))),saveRate:avg(data.map(x=>n(x.saveRate))),likeRate:avg(data.map(x=>n(x.likeRate))),commentRate:avg(data.map(x=>n(x.commentRate)))};
+}
+function score(x,a){
+  calc(x); a=a||averages();
+  const reach=a.reach>0?Math.min(100,Math.max(0,x.reach/a.reach*60+40)):(x.reach>0?100:50);
+  const eng=a.er>0?Math.min(100,Math.max(0,x.er/a.er*60+40)):(x.er>0?100:50);
+  const share=a.shareRate>0?Math.min(100,Math.max(0,x.shareRate/a.shareRate*50+50)):(x.shareRate>0?100:50);
+  const save=a.saveRate>0?Math.min(100,Math.max(0,x.saveRate/a.saveRate*50+50)):(x.saveRate>0?100:50);
+  return Math.max(0,Math.min(100,Math.round(reach*.30+eng*.35+share*.15+save*.20)));
+}
+function diagnosis(x,a){const hr=x.reach>=a.reach,he=x.er>=a.er;return hr&&he?'SCALE':!hr&&he?'HIDDEN GEM':hr&&!he?'OPTIMIZE':'REWORK'}
+function dbToContent(r){return calc({id:r.id,date:r.content_date||'',platform:r.platform||'Instagram',title:r.title||'',pillar:r.pillar||'',topic:r.topic||'',format:r.format||'Reels',hook:r.hook||'Problem',cta:r.cta||'None',reach:n(r.reach),impressions:n(r.impressions),views:n(r.views),likes:n(r.likes),comments:n(r.comments),shares:n(r.shares),saves:n(r.saves),profile:n(r.profile_visits),linkClicks:n(r.link_clicks),leads:n(r.leads),notes:r.notes||''})}
+function contentToDb(x){return {workspace_id:workspace.id,created_by:currentUser.id,content_date:x.date||null,platform:x.platform,title:x.title,pillar:x.pillar,topic:x.topic||null,format:x.format,hook:x.hook,cta:x.cta,reach:n(x.reach),impressions:n(x.impressions),views:n(x.views),likes:n(x.likes),comments:n(x.comments),shares:n(x.shares),saves:n(x.saves),profile_visits:n(x.profile),link_clicks:n(x.linkClicks),leads:n(x.leads),engagement_rate:n(x.er),like_rate:n(x.likeRate),comment_rate:n(x.commentRate),share_rate:n(x.shareRate),save_rate:n(x.saveRate),content_score:n(x.score),diagnosis:x.diagnosis||null,notes:x.notes||null}}
+function dbToPlan(r){return {id:r.id,date:r.planned_date||'',time:r.planned_time||'',platform:r.platform||'Instagram',title:r.title||'',topic:r.topic||'',pillar:r.pillar||'General',format:r.format||'Carousel',hook:r.hook||'Problem',cta:r.cta||'Save',status:r.status||'idea',notes:r.notes||''}}
+function showMsg(id,text,type='error'){const el=document.getElementById(id);el.textContent=text;el.className='auth-msg show '+type}
+function showLogin(){document.getElementById('loginPanel').style.display='block';document.getElementById('registerPanel').style.display='none';document.getElementById('loginMsg').className='auth-msg';document.getElementById('registerMsg').className='auth-msg'}
+function showRegister(){document.getElementById('loginPanel').style.display='none';document.getElementById('registerPanel').style.display='block';document.getElementById('loginMsg').className='auth-msg';document.getElementById('registerMsg').className='auth-msg'}
+function setAuthVisible(v){document.getElementById('authScreen').classList.toggle('hidden',!v);document.querySelector('.app').style.visibility=v?'hidden':'visible'}
+
+async function ensureWorkspace(){
+  // V5: prioritaskan workspace tempat user menjadi member (Analyst/Viewer)
+  // sebelum workspace yang dimiliki sendiri. Ini mencegah akun undangan
+  // kembali masuk ke "My Workspace".
+
+  const {data: memberships, error: memberError} = await db
+    .from('workspace_members')
+    .select('workspace_id,role,status,created_at')
+    .eq('user_id', currentUser.id)
+    .eq('status', 'active')
+    .order('created_at', {ascending:true});
+
+  if(memberError) throw memberError;
+
+  if(Array.isArray(memberships) && memberships.length){
+    // Jika user punya membership sebagai Analyst/Viewer dan juga Owner,
+    // dahulukan membership non-owner.
+    const ordered = [...memberships].sort((a,b)=>{
+      const rank = r => r === 'analyst' ? 0 : (r === 'viewer' ? 1 : 2);
+      return rank(a.role) - rank(b.role);
+    });
+
+    for(const m of ordered){
+      const {data:ws, error:wsError} = await db
+        .from('workspaces')
+        .select('*')
+        .eq('id', m.workspace_id)
+        .maybeSingle();
+
+      if(wsError) throw wsError;
+
+      if(ws){
+        workspace = ws;
+        window.currentWorkspaceRole = m.role || null;
+        return ws;
+      }
+    }
+  }
+
+  // Jika belum punya membership aktif, cek workspace milik sendiri.
+  const {data:ownedWs, error:ownerError} = await db
+    .from('workspaces')
+    .select('*')
+    .eq('owner_id', currentUser.id)
+    .order('created_at', {ascending:true})
+    .limit(1)
+    .maybeSingle();
+
+  if(ownerError) throw ownerError;
+
+  if(ownedWs){
+    workspace = ownedWs;
+    window.currentWorkspaceRole = 'owner';
+    return ownedWs;
+  }
+
+  // Hanya user yang benar-benar belum punya workspace/membership
+  // yang akan dibuatkan My Workspace baru.
+  const {data:newWs, error:createError} = await db
+    .from('workspaces')
+    .insert({
+      name:'My Workspace',
+      description:'Social Media Growth Analyzer workspace',
+      owner_id:currentUser.id
+    })
+    .select()
+    .single();
+
+  if(createError) throw createError;
+
+  workspace = newWs;
+  window.currentWorkspaceRole = 'owner';
+  return newWs;
+}
+async function loadCloudData(){
+  if(!workspace)return;
+  let {data:rows,error}=await db.from('contents').select('*').eq('workspace_id',workspace.id).order('content_date',{ascending:false}).order('created_at',{ascending:false});
+  if(error) throw error; data=(rows||[]).map(dbToContent);
+  let {data:prs,error:pe}=await db.from('content_plans').select('*').eq('workspace_id',workspace.id).order('planned_date',{ascending:true}).order('created_at',{ascending:false});
+  if(pe) throw pe; plans=(prs||[]).map(dbToPlan);
+  render(); renderWorkspace();
+}
+async function bootUser(user){
+  pendingProfileAvatar=null; currentUser=user; document.getElementById('currentUserEmail').textContent=user.email||''; renderUserSettings(); setAuthVisible(false);
+  try{await ensureWorkspace();await loadCloudData();}catch(e){console.error(e);alert('Gagal memuat workspace/data: '+e.message);}
+}
+async function init(){
+  document.getElementById('loginForm').addEventListener('submit',login);
+  document.getElementById('registerForm').addEventListener('submit',register);
+  const {data:{session}}=await db.auth.getSession();
+  if(session?.user) await bootUser(session.user); else setAuthVisible(true);
+  db.auth.onAuthStateChange(async(event,session)=>{
+    if(session?.user){await bootUser(session.user)}else{currentUser=null;workspace=null;data=[];plans=[];setAuthVisible(true)}
+  });
+}
+async function login(e){
+  e.preventDefault(); const btn=e.submitter; btn.disabled=true;
+  try{const {error}=await db.auth.signInWithPassword({email:loginEmail.value.trim(),password:loginPassword.value});if(error)throw error;showMsg('loginMsg','Login berhasil.','success')}catch(err){showMsg('loginMsg',friendlyAuthError(err.message))}finally{btn.disabled=false}
+}
+async function register(e){
+  e.preventDefault(); const btn=e.submitter; btn.disabled=true;
+  try{
+    const email=registerEmail.value.trim(),password=registerPassword.value,name=registerName.value.trim();
+    const {data,error}=await db.auth.signUp({email,password,options:{data:{full_name:name}}}); if(error)throw error;
+    showMsg('registerMsg','Akun berhasil dibuat. Silakan login ke GrowthScope.','success'); e.target.reset();
+  }catch(err){showMsg('registerMsg',friendlyAuthError(err.message))}finally{btn.disabled=false}
+}
+function friendlyAuthError(msg){const m=String(msg||'');if(m.toLowerCase().includes('invalid login'))return'Email atau password salah.';if(m.toLowerCase().includes('already registered'))return'Email ini sudah terdaftar. Silakan login.';if(m.toLowerCase().includes('email not confirmed'))return'Email belum diverifikasi. Cek inbox email kamu.';return m}
+async function logout(){await db.auth.signOut()}
+
+async function render(){
+  data.forEach(calc); const a=averages(); data.forEach(x=>{x.score=score(x,a);x.diagnosis=diagnosis(x,a)});
+  document.getElementById('mContent').textContent=data.length; document.getElementById('mReach').textContent=(data.reduce((s,x)=>s+n(x.reach),0)/1000).toFixed(1)+'K'; document.getElementById('mER').textContent=pct(a.er); document.getElementById('mScore').textContent=data.length?Math.round(avg(data.map(x=>x.score))):0;
+  document.getElementById('aLike').textContent=pct(a.likeRate);document.getElementById('aComment').textContent=pct(a.commentRate);document.getElementById('aShare').textContent=pct(a.shareRate);document.getElementById('aSave').textContent=pct(a.saveRate);
+  renderTable(a);renderGroups();renderDashboard();renderRecs(a);renderPlanner();
+}
+function renderTable(a){const tb=document.getElementById('contentTable');if(!data.length){tb.innerHTML='<tr><td colspan="9" class="empty">Belum ada data. Klik “Add Content” untuk mulai.</td></tr>';return}tb.innerHTML=data.map(x=>`<tr><td>${esc(x.date)}</td><td><b>${esc(x.title)}</b><br><span style="color:#718096">${esc(x.platform)}</span></td><td>${esc(x.pillar)}</td><td>${esc(x.format)}</td><td>${n(x.reach).toLocaleString()}</td><td>${pct(x.er)}</td><td><b>${x.score}</b></td><td><span class="pill ${x.score>=75?'good':x.score>=50?'warn':'bad'}">${diagnosis(x,a)}</span></td><td style="display:flex;gap:5px"><button class="btn light" onclick="editContent('${x.id}')">Edit</button><button class="btn danger" onclick="deleteContent('${x.id}')">Delete</button></td></tr>`).join('')}
+function groupStats(key){const map={};data.forEach(x=>{const k=x[key]||'Unknown';(map[k]??=[]).push(x)});return Object.entries(map).sort((A,B)=>avg(B[1].map(x=>x.er))-avg(A[1].map(x=>x.er))).map(([k,v])=>`<tr><td><b>${esc(k)}</b></td><td>${v.length}</td><td>${Math.round(avg(v.map(x=>x.reach))).toLocaleString()}</td><td>${pct(avg(v.map(x=>x.er)))}</td><td>${pct(avg(v.map(x=>x.shareRate)))}</td><td>${pct(avg(v.map(x=>x.saveRate)))}</td></tr>`).join('')}
+function renderGroups(){const h='<table class="table"><thead><tr><th>Category</th><th>Posts</th><th>Avg Reach</th><th>Avg ER</th><th>Share</th><th>Save</th></tr></thead><tbody>';document.getElementById('pillarTable').innerHTML=data.length?h+groupStats('pillar')+'</tbody></table>':'<div class="empty">No data</div>';document.getElementById('formatTable').innerHTML=data.length?h+groupStats('format')+'</tbody></table>':'<div class="empty">No data</div>'}
+function best(key){if(!data.length)return'No data';const map={};data.forEach(x=>(map[x[key]||'Unknown']??=[]).push(x.er));return Object.entries(map).sort((a,b)=>avg(b[1])-avg(a[1]))[0]?.[0]||'No data'}
+function renderDashboard(){document.getElementById('bestPillar').innerHTML=data.length?'<b>'+esc(best('pillar'))+'</b>':'No data';document.getElementById('bestFormat').innerHTML=data.length?'<b>'+esc(best('format'))+'</b>':'No data';document.getElementById('bestHook').innerHTML=data.length?'<b>'+esc(best('hook'))+'</b>':'No data';const top=data.slice().sort((a,b)=>b.score-a.score).slice(0,5);document.getElementById('topContent').innerHTML=top.length?top.map(x=>`<div style="padding:10px 0;border-bottom:1px solid #e7ebf2"><b>${esc(x.title)}</b><div style="font-size:12px;color:#718096">${esc(x.format)} · Score ${x.score} · ER ${pct(x.er)}</div></div>`).join(''):'<div class="empty">No data</div>';drawChart()}
+function drawChart(){const c=document.getElementById('chart');if(!c)return;const ctx=c.getContext('2d');const d=data.slice().reverse().slice(-12);ctx.clearRect(0,0,c.width,c.height);if(!d.length){ctx.font='14px system-ui';ctx.fillStyle='#718096';ctx.fillText('Tambahkan konten untuk melihat grafik.',20,40);return}const w=c.width,h=c.height,p=25,max=Math.max(...d.map(x=>x.reach),1);ctx.strokeStyle='#e7ebf2';ctx.beginPath();ctx.moveTo(p,10);ctx.lineTo(p,h-25);ctx.lineTo(w-10,h-25);ctx.stroke();const step=(w-p-20)/Math.max(d.length-1,1);ctx.strokeStyle='#635bff';ctx.lineWidth=3;ctx.beginPath();d.forEach((x,i)=>{const X=p+i*step,Y=(h-25)-(x.reach/max)*(h-45);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)});ctx.stroke();d.forEach((x,i)=>{const X=p+i*step,Y=(h-25)-(x.reach/max)*(h-45);ctx.fillStyle='#635bff';ctx.beginPath();ctx.arc(X,Y,3,0,Math.PI*2);ctx.fill()})}
+function renderGroupsLegacy(){return null}
+function renderMatrixGroup(id,items){document.getElementById(id).innerHTML=items.length?items.slice(0,8).map(x=>`<div class="tag">${esc(x.title)}</div>`).join(''):'<div style="font-size:12px;margin-top:8px">No data</div>'}
+function renderGroupsMatrix(a){const groups={scale:[],gem:[],opt:[],rework:[]};data.forEach(x=>groups[{"SCALE":'scale','HIDDEN GEM':'gem','OPTIMIZE':'opt','REWORK':'rework'}[diagnosis(x,a)]].push(x));renderMatrixGroup('scaleList',groups.scale);renderMatrixGroup('gemList',groups.gem);renderMatrixGroup('optList',groups.opt);renderMatrixGroup('reworkList',groups.rework)}
+function renderGroupsForMatrix(a){renderGroupsMatrix(a)}
+function renderRecs(a){renderGroupsMatrix(a);const box=document.getElementById('recommendationsList');if(!data.length){box.innerHTML='<div class="empty">Belum ada data untuk membuat rekomendasi.</div>';return}const recs=[];const topP=best('pillar'),topF=best('format'),topH=best('hook');recs.push({t:'Pertahankan pola yang terbukti',d:`Pillar dengan ER rata-rata tertinggi saat ini adalah <b>${esc(topP)}</b>. Uji lebih banyak topik di pillar ini sambil tetap membandingkan reach dan engagement.`});recs.push({t:'Optimalkan konten dengan reach tinggi',d:`Konten berlabel <b>OPTIMIZE</b> punya reach di atas rata-rata tetapi engagement di bawah rata-rata. Perbaiki hook, CTA, atau struktur isi sebelum memperbesar distribusinya.`});recs.push({t:'Kembangkan hidden gem',d:`Konten <b>HIDDEN GEM</b> punya engagement relatif tinggi tetapi reach rendah. Uji ulang dengan packaging/hook berbeda untuk mencari distribusi yang lebih besar.`});recs.push({t:'Gunakan benchmark akun sendiri',d:`Semua diagnosis SMGA bersifat relatif terhadap rata-rata workspace saat ini. Jangan membaca label sebagai kualitas absolut.`});box.innerHTML=recs.map(r=>`<div class="rec"><strong>${r.t}</strong><div>${r.d}</div></div>`).join('')}
+function renderPlanner(){
+  const tb=document.getElementById('plannerTable');
+  if(!plans.length){tb.innerHTML='<tr><td colspan="8" class="empty">Belum ada planner. Klik “+ Add Idea” untuk membuat jadwal.</td></tr>';return}
+  tb.innerHTML=plans.map(x=>`<tr><td><b>${esc(x.date||'-')}</b>${x.time?`<div style="font-size:11px;color:#718096">${esc(x.time)}</div>`:''}</td><td><b>${esc(x.topic||x.title||'-')}</b><br><span style="font-size:11px;color:#718096">${esc(x.platform||'')}</span></td><td>${esc(x.pillar)}</td><td>${esc(x.format)}</td><td>${esc(x.hook)}</td><td>${esc(x.cta)}</td><td><span class="pill warn">${esc(x.status)}</span></td><td style="display:flex;gap:5px"><button class="btn light" onclick="editPlan('${x.id}')">Edit</button><button class="btn danger" onclick="deletePlan('${x.id}')">Delete</button></td></tr>`).join('');
+}
+function openPlanModal(plan){
+  document.getElementById('planForm').reset();
+  document.getElementById('planEditId').value=plan?.id||'';
+  document.getElementById('planModalTitle').textContent=plan?'Edit Planner Idea':'Add Planner Idea';
+  document.getElementById('planDate').value=plan?.date||new Date().toISOString().slice(0,10);
+  document.getElementById('planTime').value=plan?.time||'';
+  document.getElementById('planPlatform').value=plan?.platform||'Instagram';
+  document.getElementById('planTopic').value=plan?.topic||plan?.title||'';
+  document.getElementById('planPillar').value=plan?.pillar||'General';
+  document.getElementById('planFormat').value=plan?.format||'Carousel';
+  document.getElementById('planHook').value=plan?.hook||'Problem';
+  document.getElementById('planCTA').value=plan?.cta||'Save';
+  document.getElementById('planStatus').value=plan?.status||'idea';
+  document.getElementById('planNotes').value=plan?.notes||'';
+  document.getElementById('planModal').classList.add('open');
+}
+function closePlanModal(){document.getElementById('planModal').classList.remove('open')}
+function editPlan(id){const p=plans.find(x=>String(x.id)===String(id));if(p)openPlanModal(p)}
+async function savePlan(e){
+  e.preventDefault(); if(!workspace||!currentUser)return;
+  const id=document.getElementById('planEditId').value;
+  const topic=document.getElementById('planTopic').value.trim();
+  if(!topic){alert('Topic wajib diisi.');return}
+  const payload={workspace_id:workspace.id,created_by:currentUser.id,planned_date:document.getElementById('planDate').value||null,planned_time:document.getElementById('planTime').value||null,platform:document.getElementById('planPlatform').value,title:topic,topic,pillar:document.getElementById('planPillar').value.trim()||'General',format:document.getElementById('planFormat').value,hook:document.getElementById('planHook').value,cta:document.getElementById('planCTA').value.trim()||'Save',status:document.getElementById('planStatus').value,notes:document.getElementById('planNotes').value.trim()||null};
+  const result=id?await db.from('content_plans').update(payload).eq('id',id).eq('workspace_id',workspace.id):await db.from('content_plans').insert(payload);
+  if(result.error){alert('Gagal menyimpan planner: '+result.error.message);return}
+  closePlanModal(); await loadCloudData();
+}
+async function addPlan(){openPlanModal()}
+function renderWorkspace(){
+  if(!workspace)return;
+  document.getElementById('wsNameDisplay').textContent=workspace.name;
+  document.getElementById('workspaceNameInput').value=workspace.name||'';
+  document.getElementById('workspaceDescInput').value=workspace.description||'';
+  renderUserSettings(); loadMembers();
+}
+let pendingProfileAvatar=null;
+function renderAvatarImage(value,initial){
+  if(value && /^(data:image\/(?:jpeg|png|webp);base64,|https:\/\/)/i.test(value))return `<img src="${esc(value)}" alt="Avatar">`;
+  return esc(initial);
+}
+function updateProfileAvatarPreview(value){
+  const name=document.getElementById('profileNameInput').value.trim()||'User';
+  const initial=name.charAt(0).toUpperCase();
+  document.getElementById('profilePreviewAvatar').innerHTML=renderAvatarImage(value,initial);
+}
+async function previewAvatarFile(event){
+  const file=event.target.files?.[0];if(!file)return;
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type)){alert('Gunakan file JPG, PNG, atau WebP.');event.target.value='';return}
+  if(file.size>8*1024*1024){alert('Foto maksimal 8 MB.');event.target.value='';return}
+  try{
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+    try{await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url})}finally{URL.revokeObjectURL(url)}
+    const canvas=document.createElement('canvas');canvas.width=128;canvas.height=128;
+    const ctx=canvas.getContext('2d');
+    const side=Math.min(img.naturalWidth,img.naturalHeight);
+    ctx.drawImage(img,(img.naturalWidth-side)/2,(img.naturalHeight-side)/2,side,side,0,0,128,128);
+    const encoded=canvas.toDataURL('image/jpeg',0.7);
+    if(encoded.length>100000)throw new Error('Foto terlalu besar setelah diperkecil.');
+    pendingProfileAvatar=encoded;
+    updateProfileAvatarPreview(encoded);
+  }catch(err){alert('Gagal membaca foto: '+err.message);event.target.value=''}
+}
+function removeProfileAvatar(){pendingProfileAvatar='';document.getElementById('profileAvatarFile').value='';updateProfileAvatarPreview('')}
+function renderUserSettings(){
+  if(!currentUser)return;
+  const meta=currentUser.user_metadata||{},name=meta.full_name||meta.name||'User',avatar=meta.avatar_url||'',email=currentUser.email||'';
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v};
+  set('profileNameInput',name);set('profileEmailDisplay',email);
+  const pn=document.getElementById('profilePreviewName'),pe=document.getElementById('profilePreviewEmail'),pa=document.getElementById('profilePreviewAvatar'),tn=document.getElementById('currentUserName'),ta=document.getElementById('userAvatarTop');
+  if(pn)pn.textContent=name;if(pe)pe.textContent=email;if(tn)tn.textContent=name;
+  const initial=(name||email||'U').trim().charAt(0).toUpperCase();
+  const displayAvatar=pendingProfileAvatar===null?avatar:pendingProfileAvatar;
+  if(pa)pa.innerHTML=renderAvatarImage(displayAvatar,initial);
+  if(ta)ta.innerHTML=renderAvatarImage(avatar,initial);
+}
+async function saveUserSettings(){
+  if(!currentUser)return;
+  const full_name=document.getElementById('profileNameInput').value.trim()||'User';
+  const avatar_url=pendingProfileAvatar===null?(currentUser.user_metadata?.avatar_url||''):pendingProfileAvatar;
+  const {data,error}=await db.auth.updateUser({data:{full_name,avatar_url}});
+  if(error){alert('Gagal menyimpan profile: '+error.message);return}
+  currentUser=data.user;pendingProfileAvatar=null;renderUserSettings();alert('Profile berhasil disimpan.');
+}
+async function loadMembers(){if(!workspace)return;const {data:members,error}=await db.from('workspace_members').select('id,user_id,role,status,created_at').eq('workspace_id',workspace.id).order('created_at',{ascending:true});if(error){console.error(error);return}document.getElementById('memberCount').textContent=members.length;const me=members.find(m=>m.user_id===currentUser.id);document.getElementById('ownerRole').textContent=(me?.role||'viewer').replace(/^./,c=>c.toUpperCase());document.getElementById('membersTable').innerHTML=members.length?members.map(m=>`<tr><td><b>${m.user_id===currentUser.id?'You':m.user_id}</b></td><td>${esc(m.role)}</td><td>${esc(m.status)}</td><td>${m.role==='owner'?'Full access':m.role==='analyst'?'Analytics + Content':'View only'}</td><td>${m.user_id!==currentUser.id&&me?.role==='owner'?`<button class="btn danger" onclick="removeMember('${m.id}')">Remove</button>`:''}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">No members</td></tr>'}
+async function saveWorkspace(){if(!workspace)return;const name=document.getElementById('workspaceNameInput').value.trim()||'My Workspace';const description=document.getElementById('workspaceDescInput').value.trim();const {data:ws,error}=await db.from('workspaces').update({name,description,updated_at:new Date().toISOString()}).eq('id',workspace.id).select().single();if(error){alert(error.message);return}workspace=ws;renderWorkspace();alert('Workspace berhasil disimpan.')}
+async function removeMember(id){if(!confirm('Hapus member dari workspace?'))return;const {error}=await db.from('workspace_members').delete().eq('id',id);if(error)alert(error.message);else loadMembers()}
+async function inviteMember(){
+  const email=document.getElementById('inviteEmail').value.trim();
+  const role=document.getElementById('inviteRole').value.toLowerCase();
+
+  if(!email){
+    alert('Masukkan email terlebih dahulu.');
+    return;
+  }
+
+  if(!workspace || !currentUser){
+    alert('Workspace belum siap. Silakan login ulang.');
+    return;
+  }
+
+  try{
+    // Ambil session login secara eksplisit agar JWT user selalu dikirim
+    const {data:sessionData,error:sessionError}=await db.auth.getSession();
+    const session=sessionData?.session;
+
+    if(sessionError) throw sessionError;
+    if(!session?.access_token){
+      throw new Error('Session login tidak ditemukan. Silakan logout lalu login kembali.');
+    }
+
+    const {data,error}=await db.functions.invoke('invite-member',{
+      headers:{
+        Authorization:`Bearer ${session.access_token}`
+      },
+      body:{
+        email,
+        workspace_id:workspace.id,
+        role
+      }
+    });
+
+    if(error){
+      let message=error.message||'Gagal mengirim invitation.';
+      try{
+        if(error.context){
+          const body=await error.context.json();
+          if(body?.error) message=body.error;
+        }
+      }catch(_){}
+      throw new Error(message);
+    }
+
+    if(data?.error){
+      throw new Error(data.error);
+    }
+
+    document.getElementById('inviteEmail').value='';
+    await loadMembers();
+    alert(`Invitation berhasil dikirim ke ${email}.`);
+  }catch(err){
+    console.error('Invite member error:',err);
+    alert('Gagal mengirim invitation: '+(err.message||'Terjadi kesalahan.'));
+  }
+}
+function openModal(){document.getElementById('modal').classList.add('open');document.getElementById('contentForm').reset();document.getElementById('editId').value='';document.querySelector('#modal h2').textContent='Add Social Media Content';document.getElementById('fDate').value=new Date().toISOString().slice(0,10)}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+function editContent(id){const x=data.find(v=>String(v.id)===String(id));if(!x)return;document.getElementById('editId').value=x.id;fDate.value=x.date;fPlatform.value=x.platform;fTitle.value=x.title;fPillar.value=x.pillar;fFormat.value=x.format;fHook.value=x.hook;fCTA.value=x.cta;fReach.value=x.reach;fViews.value=x.views;fLikes.value=x.likes;fComments.value=x.comments;fShares.value=x.shares;fSaves.value=x.saves;fProfile.value=x.profile;fLeads.value=x.leads;document.querySelector('#modal h2').textContent='Edit Social Media Content';document.getElementById('modal').classList.add('open')}
+async function saveContent(e){e.preventDefault();if(!workspace)return;const editId=document.getElementById('editId').value;const x={id:editId||null,date:fDate.value,platform:fPlatform.value,title:fTitle.value.trim(),pillar:fPillar.value.trim(),format:fFormat.value,hook:fHook.value,cta:fCTA.value,reach:n(fReach.value),views:n(fViews.value),likes:n(fLikes.value),comments:n(fComments.value),shares:n(fShares.value),saves:n(fSaves.value),profile:n(fProfile.value),leads:n(fLeads.value)};calc(x);x.score=score(x,averages());x.diagnosis=diagnosis(x,averages());let error;if(editId){({error}=await db.from('contents').update(contentToDb(x)).eq('id',editId).eq('workspace_id',workspace.id))}else{({error}=await db.from('contents').insert(contentToDb(x)))}if(error){alert(error.message);return}closeModal();await loadCloudData();showPage('database')}
+async function deleteContent(id){if(!confirm('Hapus konten ini?'))return;const {error}=await db.from('contents').delete().eq('id',id).eq('workspace_id',workspace.id);if(error)alert(error.message);else await loadCloudData()}
+async function deletePlan(id){if(!confirm('Hapus ide ini?'))return;const {error}=await db.from('content_plans').delete().eq('id',id).eq('workspace_id',workspace.id);if(error)alert(error.message);else await loadCloudData()}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));const titles={dashboard:'Dashboard',database:'Content Database',analytics:'Content Analytics',matrix:'Performance Matrix',recommendations:'Recommendations',planner:'Content Planner',workspace:'Workspace'};document.getElementById('pageTitle').textContent=titles[id]||id}
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+async function exportJSON(){const payload={version:'2.1-cloud',exportedAt:new Date().toISOString(),workspace,data,plans};downloadBlob(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),'smga-cloud-backup.json')}
+function downloadBlob(blob,filename){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},500)}
+async function exportCSV(){const headers=['Date','Platform','Content','Pillar','Format','Hook','CTA','Reach','Views','Likes','Comments','Shares','Saves','Profile Visits','Leads'];const rows=data.map(x=>[x.date,x.platform,x.title,x.pillar,x.format,x.hook,x.cta,x.reach,x.views,x.likes,x.comments,x.shares,x.saves,x.profile,x.leads]);const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');downloadBlob(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),'smga-content-data.csv')}
+function downloadCSVTemplate(){const headers=['Date','Platform','Content','Pillar','Format','Hook','CTA','Reach','Views','Likes','Comments','Shares','Saves','Profile Visits','Leads'];const example=['2026-09-30','Instagram','Contoh Konten','Education','Carousel','Problem','Save',1000,1500,80,5,20,30,40,3];const csv=[headers,example].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');downloadBlob(new Blob(['\ufeff'+csv],{type:'text/csv'}),'smga-import-template.csv')}
+function clearAllData(){alert('Pada Cloud V2, penghapusan massal belum diaktifkan untuk mencegah kehilangan data. Gunakan Delete per konten.')}
+function importJSON(){alert('Import JSON akan kita aktifkan setelah versi cloud dasar stabil. Gunakan Add Content atau CSV import pada tahap berikutnya.')}
+async function importCSV(event){
+  const file=event?.target?.files?.[0];
+  if(!file) return;
+  if(!workspace){
+    alert('Workspace belum siap. Silakan login kembali.');
+    return;
+  }
+
+  try{
+    const text=(await file.text()).replace(/^\uFEFF/,'');
+    const rows=[];
+    let row=[], cell='', inQuotes=false;
+
+    for(let i=0;i<text.length;i++){
+      const ch=text[i], next=text[i+1];
+      if(ch==='"'){
+        if(inQuotes && next==='"'){ cell+='"'; i++; }
+        else inQuotes=!inQuotes;
+      }else if(ch===',' && !inQuotes){
+        row.push(cell); cell='';
+      }else if((ch==='\n'||ch==='\r') && !inQuotes){
+        if(ch==='\r' && next==='\n') i++;
+        row.push(cell);
+        if(row.some(v=>String(v).trim()!=='')) rows.push(row);
+        row=[]; cell='';
+      }else{
+        cell+=ch;
+      }
+    }
+
+    if(cell!=='' || row.length){
+      row.push(cell);
+      if(row.some(v=>String(v).trim()!=='')) rows.push(row);
+    }
+
+    if(rows.length<2) throw new Error('CSV kosong atau hanya berisi header.');
+
+    const headers=rows[0].map(h=>String(h).trim().toLowerCase());
+    const required=['date','platform','content','pillar','format','hook','cta','reach','views','likes','comments','shares','saves','profile visits','leads'];
+    const missing=required.filter(h=>!headers.includes(h));
+    if(missing.length){
+      throw new Error('Format CSV tidak sesuai. Kolom yang kurang: '+missing.join(', '));
+    }
+
+    const idx={};
+    headers.forEach((h,i)=>idx[h]=i);
+
+    const num=v=>{
+      const n=Number(String(v??'').trim().replace(/,/g,''));
+      return Number.isFinite(n)?n:0;
+    };
+
+    const imported=[], skipped=[];
+
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i];
+      const title=String(r[idx.content]??'').trim();
+
+      if(!title){
+        skipped.push(`Baris ${i+1}: Content kosong`);
+        continue;
+      }
+
+      const x={
+        id:null,
+        date:String(r[idx.date]??'').trim(),
+        platform:String(r[idx.platform]??'Instagram').trim()||'Instagram',
+        title,
+        pillar:String(r[idx.pillar]??'').trim(),
+        format:String(r[idx.format]??'Reels').trim()||'Reels',
+        hook:String(r[idx.hook]??'Problem').trim()||'Problem',
+        cta:String(r[idx.cta]??'None').trim()||'None',
+        reach:num(r[idx.reach]),
+        views:num(r[idx.views]),
+        likes:num(r[idx.likes]),
+        comments:num(r[idx.comments]),
+        shares:num(r[idx.shares]),
+        saves:num(r[idx.saves]),
+        profile:num(r[idx['profile visits']]),
+        leads:num(r[idx.leads])
+      };
+
+      if(x.date && !/^\d{4}-\d{2}-\d{2}$/.test(x.date)){
+        skipped.push(`Baris ${i+1}: Date harus YYYY-MM-DD`);
+        continue;
+      }
+
+      calc(x);
+      x.score=score(x,averages());
+      x.diagnosis=diagnosis(x,averages());
+      imported.push(contentToDb(x));
+    }
+
+    if(!imported.length){
+      throw new Error(skipped.join('\n')||'Tidak ada data yang bisa diimport.');
+    }
+
+    const {error}=await db.from('contents').insert(imported);
+    if(error) throw error;
+
+    await loadCloudData();
+    showPage('database');
+
+    let message=`Berhasil import ${imported.length} konten ke workspace "${workspace.name}".`;
+    if(skipped.length){
+      message+=`\n\n${skipped.length} baris dilewati:\n`+skipped.slice(0,10).join('\n');
+    }
+    alert(message);
+
+  }catch(err){
+    console.error('CSV import error:',err);
+    alert('Import CSV gagal: '+(err.message||'Terjadi kesalahan.'));
+  }finally{
+    if(event?.target) event.target.value='';
+  }
+}
+
+// Matrix hook after every render
+const _oldRender=render; render=async function(){await _oldRender();renderGroupsMatrix(averages())};
+
+init();
+</script>
+</body>
+</html>
