@@ -20,8 +20,12 @@
   .top>div:first-child{min-width:0}
   .top h1{font-size:20px;margin:0}
   .top p{font-size:11px;margin-top:3px}
-  .actions{min-width:0;max-width:100%;display:flex;align-items:center;gap:6px;overflow:visible}
-  .actions>.btn.danger{display:none!important}
+  .actions{min-width:0;max-width:100%;display:flex;align-items:center;justify-content:flex-end;gap:7px;overflow:visible}
+  .actions .btn.light:not(.logout-btn),
+  .actions .btn.danger{display:none!important}
+  .actions .user-chip{display:flex;align-items:center;gap:7px}
+  .actions .logout-btn{display:inline-flex!important;align-items:center;justify-content:center;background:#fff;border:1px solid #e4e8ef!important;font-size:11px!important;padding:9px 10px!important;white-space:nowrap}
+  .actions .user-avatar-top{display:inline-flex!important;flex:0 0 38px;width:38px;height:38px;border-radius:50%;align-items:center;justify-content:center}
   .actions>.btn.primary{font-size:0!important;width:42px;height:42px;padding:0!important;display:inline-flex;align-items:center;justify-content:center;flex:0 0 42px}
   .actions>.btn.primary::before{content:"+";font-size:24px;line-height:1}
   .user-chip{min-width:0}
