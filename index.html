@@ -624,7 +624,61 @@ async function exportJSON(){const payload={version:'2.1-cloud',exportedAt:new Da
 function downloadBlob(blob,filename){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},500)}
 async function exportCSV(){const headers=['Date','Platform','Content','Pillar','Format','Hook','CTA','Reach','Views','Likes','Comments','Shares','Saves','Profile Visits','Leads'];const rows=data.map(x=>[x.date,x.platform,x.title,x.pillar,x.format,x.hook,x.cta,x.reach,x.views,x.likes,x.comments,x.shares,x.saves,x.profile,x.leads]);const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');downloadBlob(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),'smga-content-data.csv')}
 function downloadCSVTemplate(){const headers=['Date','Platform','Content','Pillar','Format','Hook','CTA','Reach','Views','Likes','Comments','Shares','Saves','Profile Visits','Leads'];const example=['2026-09-30','Instagram','Contoh Konten','Education','Carousel','Problem','Save',1000,1500,80,5,20,30,40,3];const csv=[headers,example].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');downloadBlob(new Blob(['\ufeff'+csv],{type:'text/csv'}),'smga-import-template.csv')}
-function clearAllData(){alert('Pada Cloud V2, penghapusan massal belum diaktifkan untuk mencegah kehilangan data. Gunakan Delete per konten.')}
+async function clearAllData(){
+  if(!workspace || !currentUser){
+    alert('Workspace belum siap. Silakan login kembali.');
+    return;
+  }
+
+  if(!data.length && !plans.length){
+    alert('Data workspace ini sudah kosong.');
+    return;
+  }
+
+  const contentCount=data.length;
+  const planCount=plans.length;
+  const confirmed=confirm(
+    `Hapus SEMUA data dari workspace "${workspace.name}"?\\n\\n`+
+    `• ${contentCount} konten\\n`+
+    `• ${planCount} ide planner\\n\\n`+
+    'Tindakan ini tidak dapat dibatalkan.'
+  );
+
+  if(!confirmed) return;
+
+  const typed=prompt('Untuk konfirmasi, ketik: HAPUS SEMUA');
+  if(typed?.trim().toUpperCase()!=='HAPUS SEMUA'){
+    alert('Penghapusan dibatalkan. Teks konfirmasi tidak sesuai.');
+    return;
+  }
+
+  try{
+    const results=await Promise.all([
+      db.from('contents').delete().eq('workspace_id',workspace.id),
+      db.from('content_plans').delete().eq('workspace_id',workspace.id)
+    ]);
+
+    const failed=results.find(r=>r.error);
+    if(failed?.error) throw failed.error;
+
+    data=[];
+    plans=[];
+
+    await loadCloudData();
+    render();
+    showPage('dashboard');
+
+    alert(
+      `Semua data berhasil dihapus dari workspace "${workspace.name}".\\n\\n`+
+      `Konten: ${contentCount}\\n`+
+      `Planner: ${planCount}`
+    );
+  }catch(err){
+    console.error('Clear data error:',err);
+    alert('Gagal menghapus semua data: '+(err.message||'Terjadi kesalahan.'));
+    await loadCloudData();
+  }
+}
 function importJSON(){alert('Import JSON akan kita aktifkan setelah versi cloud dasar stabil. Gunakan Add Content atau CSV import pada tahap berikutnya.')}
 async function importCSV(event){
   const file=event?.target?.files?.[0];
