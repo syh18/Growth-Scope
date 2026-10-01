@@ -511,7 +511,8 @@ async function ensureWorkspace(){
 
       if(ws){
         workspace = ws;
-        window.currentWorkspaceRole = m.role || null;
+        currentWorkspaceRole = m.role || null;
+        window.currentWorkspaceRole = currentWorkspaceRole;
         return ws;
       }
     }
@@ -530,7 +531,8 @@ async function ensureWorkspace(){
 
   if(ownedWs){
     workspace = ownedWs;
-    window.currentWorkspaceRole = 'owner';
+    currentWorkspaceRole = 'owner';
+    window.currentWorkspaceRole = currentWorkspaceRole;
     return ownedWs;
   }
 
@@ -903,6 +905,12 @@ async function clearAllData(){
     return;
   }
 
+  const isOwner = currentWorkspaceRole === 'owner' || workspace.owner_id === currentUser.id;
+  if(!isOwner){
+    alert('Clear Data hanya bisa dilakukan oleh Owner workspace. Akun ini memiliki role '+(currentWorkspaceRole||'member')+'. Silakan login dengan akun Owner untuk menghapus seluruh data workspace.');
+    return;
+  }
+
   if(!data.length && !plans.length){
     alert('Data workspace ini sudah kosong.');
     return;
@@ -911,9 +919,9 @@ async function clearAllData(){
   const contentCount=data.length;
   const planCount=plans.length;
   const confirmed=confirm(
-    `Hapus SEMUA data dari workspace "${workspace.name}"?\\n\\n`+
-    `• ${contentCount} konten\\n`+
-    `• ${planCount} ide planner\\n\\n`+
+    \`Hapus SEMUA data dari workspace "\${workspace.name}"?\\n\\n\`+
+    \`• \${contentCount} konten\\n\`+
+    \`• \${planCount} ide planner\\n\\n\`+
     'Tindakan ini tidak dapat dibatalkan.'
   );
 
@@ -926,25 +934,34 @@ async function clearAllData(){
   }
 
   try{
-    const results=await Promise.all([
+    const [contentDelete, planDelete] = await Promise.all([
       db.from('contents').delete().eq('workspace_id',workspace.id),
       db.from('content_plans').delete().eq('workspace_id',workspace.id)
     ]);
 
-    const failed=results.find(r=>r.error);
-    if(failed?.error) throw failed.error;
+    if(contentDelete.error) throw contentDelete.error;
+    if(planDelete.error) throw planDelete.error;
 
-    data=[];
-    plans=[];
-
+    // Verifikasi ulang ke Supabase. DELETE dengan RLS dapat mengembalikan
+    // tanpa error tetapi tidak menghapus baris jika policy tidak mengizinkan.
     await loadCloudData();
+
+    if(data.length || plans.length){
+      const remaining = [];
+      if(data.length) remaining.push(data.length+' konten');
+      if(plans.length) remaining.push(plans.length+' planner');
+      alert('Penghapusan belum selesai. Data yang masih tersisa: '+remaining.join(' dan ')+'. Periksa policy DELETE Supabase untuk workspace ini.');
+      render();
+      return;
+    }
+
     render();
     showPage('dashboard');
 
     alert(
-      `Semua data berhasil dihapus dari workspace "${workspace.name}".\\n\\n`+
-      `Konten: ${contentCount}\\n`+
-      `Planner: ${planCount}`
+      \`Semua data berhasil dihapus dari workspace "\${workspace.name}".\\n\\n\`+
+      \`Konten: \${contentCount}\\n\`+
+      \`Planner: \${planCount}\`
     );
   }catch(err){
     console.error('Clear data error:',err);
