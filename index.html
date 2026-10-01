@@ -12,16 +12,19 @@
 .mobile-bottom-nav{display:none}
 .mobile-more-panel{display:none}
 @media(max-width:760px){
-  body{overflow-x:hidden}
-  .app{display:block;min-height:100vh}
-  .sidebar{display:none!important}
-  .main{margin-left:0!important;width:100%;padding:0 12px 86px}
-  .top{position:sticky;top:0;z-index:50;margin:0 -12px 14px;padding:12px;background:rgba(248,250,252,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);align-items:center}
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  .app{display:block!important;min-height:100vh;width:100%;max-width:100%}
+  .side{display:none!important;width:0!important}
+  .main{display:block!important;margin-left:0!important;width:100%!important;max-width:none!important;box-sizing:border-box;padding:0 12px 86px}
+  .top{position:sticky;top:0;z-index:50;margin:0 -12px 14px;padding:12px;min-height:78px;box-sizing:border-box;background:rgba(248,250,252,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);align-items:center;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;overflow:hidden}
+  .top>div:first-child{min-width:0}
   .top h1{font-size:20px;margin:0}
   .top p{font-size:11px;margin-top:3px}
-  .actions{gap:6px}
-  .actions>.btn.light:not(.logout-btn){display:none}
-  .actions>.btn.primary{padding:9px 11px;font-size:11px}
+  .actions{min-width:0;max-width:100%;display:flex;align-items:center;gap:6px;overflow:visible}
+  .actions>.btn.danger{display:none!important}
+  .actions>.btn.primary{font-size:0!important;width:42px;height:42px;padding:0!important;display:inline-flex;align-items:center;justify-content:center;flex:0 0 42px}
+  .actions>.btn.primary::before{content:"+";font-size:24px;line-height:1}
+  .user-chip{min-width:0}
   .user-chip{gap:5px}
   .user-chip .cloud-badge,.user-chip .user-name-top,.user-chip .user-email{display:none}
   .user-avatar-top{display:inline-flex!important}
