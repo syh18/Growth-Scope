@@ -7,6 +7,73 @@
 
 /* AI Studio + Growth Intelligence */
 .ai-hero{background:linear-gradient(135deg,#171f38,#635bff);color:#fff;border:0}.ai-hero h2{margin:0 0 6px}.ai-hero p{color:#dfe3ff;margin:0;line-height:1.6}.ai-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.ai-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:15px}.ai-result{min-height:160px;background:#f8f9ff;border:1px solid #e7e9ff;border-radius:12px;padding:15px;line-height:1.65}.ai-result h3{margin:0 0 8px}.ai-list{margin:8px 0 0;padding-left:20px}.idea-card{border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:9px;background:#fff}.score-big{font-size:44px;font-weight:900}.score-meter{height:10px;background:#edf0f5;border-radius:99px;overflow:hidden;margin:10px 0}.score-meter i{display:block;height:100%;background:var(--accent);border-radius:99px}.mini-stat{font-size:12px;color:var(--muted)}.ai-field-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.ai-field-grid .full{grid-column:1/-1}@media(max-width:950px){.ai-grid,.ai-field-grid{grid-template-columns:1fr}}
+
+/* GrowthScope Mobile UI - Phase 1 */
+.mobile-bottom-nav{display:none}
+.mobile-more-panel{display:none}
+@media(max-width:760px){
+  body{overflow-x:hidden}
+  .app{display:block;min-height:100vh}
+  .sidebar{display:none!important}
+  .main{margin-left:0!important;width:100%;padding:0 12px 86px}
+  .top{position:sticky;top:0;z-index:50;margin:0 -12px 14px;padding:12px;background:rgba(248,250,252,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);align-items:center}
+  .top h1{font-size:20px;margin:0}
+  .top p{font-size:11px;margin-top:3px}
+  .actions{gap:6px}
+  .actions>.btn.light:not(.logout-btn){display:none}
+  .actions>.btn.primary{padding:9px 11px;font-size:11px}
+  .user-chip{gap:5px}
+  .user-chip .cloud-badge,.user-chip .user-name-top,.user-chip .user-email{display:none}
+  .user-avatar-top{display:inline-flex!important}
+  .logout-btn{font-size:10px!important;padding:7px 8px!important}
+  .grid,.two,.three,.ai-grid{grid-template-columns:1fr!important}
+  .grid{gap:10px}
+  .section{margin-top:10px}
+  .card{border-radius:14px;padding:14px}
+  .metric{min-height:92px}
+  .metric .value{font-size:25px}
+  .section-title{gap:8px;align-items:center}
+  .section-title h2{font-size:15px}
+  .notice{font-size:11px;line-height:1.55;padding:10px}
+  .table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .table{min-width:720px;font-size:11px}
+  .table th,.table td{padding:9px 8px;white-space:nowrap}
+  .chart-wrap,canvas{max-width:100%}
+  .ai-hero{padding:16px}
+  .ai-hero h2{font-size:19px}
+  .ai-hero p{font-size:12px}
+  .ai-actions{display:grid;grid-template-columns:1fr;gap:7px}
+  .ai-actions .btn{width:100%;justify-content:center}
+  .ai-field-grid{grid-template-columns:1fr!important}
+  .ai-field-grid .full{grid-column:auto}
+  .ai-result{min-height:100px;padding:12px;font-size:12px}
+  .score-big{font-size:36px}
+  .matrix{grid-template-columns:1fr!important}
+  .matrix-guide{grid-template-columns:1fr!important}
+  .form{grid-template-columns:1fr!important}
+  .modal{padding:10px}
+  .modal-box{width:100%;max-height:90vh;border-radius:16px;padding:16px}
+  .modal-box .form{grid-template-columns:1fr!important}
+  .modal-box .form .field[style*="grid-column"]{grid-column:auto!important}
+  .mobile-bottom-nav{
+    position:fixed;display:grid;grid-template-columns:repeat(6,1fr);left:8px;right:8px;bottom:8px;height:62px;
+    background:rgba(23,31,56,.96);border:1px solid rgba(255,255,255,.08);border-radius:18px;
+    box-shadow:0 12px 35px rgba(15,23,42,.28);z-index:9998;padding:5px;backdrop-filter:blur(14px)
+  }
+  .mobile-bottom-nav button{
+    border:0;background:transparent;color:#aeb8cc;border-radius:13px;font-size:9px;font-weight:700;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer
+  }
+  .mobile-bottom-nav button span{font-size:17px;line-height:1}
+  .mobile-bottom-nav button.active{background:#635bff;color:#fff}
+  .mobile-more-panel{
+    position:fixed;display:none;left:12px;right:12px;bottom:80px;background:#fff;border:1px solid var(--line);
+    border-radius:16px;box-shadow:0 18px 50px rgba(15,23,42,.22);z-index:9997;padding:10px
+  }
+  .mobile-more-panel.open{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mobile-more-panel button{border:1px solid var(--line);background:#f8fafc;border-radius:11px;padding:12px;text-align:left;font-weight:700;color:#172033}
+}
+@media(min-width:761px){.mobile-bottom-nav,.mobile-more-panel{display:none!important}}
 </style>
 
 <meta charset="UTF-8">
@@ -279,6 +346,21 @@
   </table>
  </div>
 </section>
+
+<nav class="mobile-bottom-nav" id="mobileBottomNav">
+  <button data-mobile-page="dashboard" class="active"><span>◉</span>Home</button>
+  <button data-mobile-page="database"><span>▣</span>Content</button>
+  <button data-mobile-page="analytics"><span>◈</span>Analytics</button>
+  <button data-mobile-page="ai"><span>✨</span>AI</button>
+  <button data-mobile-page="planner"><span>☷</span>Planner</button>
+  <button type="button" onclick="toggleMobileMore()"><span>•••</span>More</button>
+</nav>
+<div class="mobile-more-panel" id="mobileMorePanel">
+  <button onclick="mobileNavigate('matrix')">✦ Performance Matrix</button>
+  <button onclick="mobileNavigate('recommendations')">◎ Recommendations</button>
+  <button onclick="mobileNavigate('workspace')">👥 Workspace</button>
+  <button onclick="toggleMobileMore()">✕ Tutup</button>
+</div>
 </main>
 </div>
 
@@ -702,6 +784,17 @@ async function deleteContent(id){if(!confirm('Hapus konten ini?'))return;const {
 async function deletePlan(id){if(!confirm('Hapus ide ini?'))return;const {error}=await db.from('content_plans').delete().eq('id',id).eq('workspace_id',workspace.id);if(error)alert(error.message);else await loadCloudData()}
 function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));const titles={dashboard:'Dashboard',database:'Content Database',analytics:'Content Analytics',matrix:'Performance Matrix',recommendations:'Recommendations',ai:'AI Studio',planner:'Content Planner',workspace:'Workspace'};document.getElementById('pageTitle').textContent=titles[id]||id}
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+function mobileNavigate(id){
+  showPage(id);
+  document.querySelectorAll('[data-mobile-page]').forEach(b=>b.classList.toggle('active',b.dataset.mobilePage===id));
+  document.getElementById('mobileMorePanel')?.classList.remove('open');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function toggleMobileMore(){
+  document.getElementById('mobileMorePanel')?.classList.toggle('open');
+}
+document.querySelectorAll('[data-mobile-page]').forEach(b=>b.addEventListener('click',()=>mobileNavigate(b.dataset.mobilePage)));
+
 async function exportJSON(){const payload={version:'2.1-cloud',exportedAt:new Date().toISOString(),workspace,data,plans};downloadBlob(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),'smga-cloud-backup.json')}
 function downloadBlob(blob,filename){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},500)}
 async function exportCSV(){const headers=['Date','Platform','Content','Pillar','Format','Hook','CTA','Reach','Views','Likes','Comments','Shares','Saves','Profile Visits','Leads'];const rows=data.map(x=>[x.date,x.platform,x.title,x.pillar,x.format,x.hook,x.cta,x.reach,x.views,x.likes,x.comments,x.shares,x.saves,x.profile,x.leads]);const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');downloadBlob(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),'smga-content-data.csv')}
