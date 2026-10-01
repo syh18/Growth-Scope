@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101828">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GrowthScope">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon.svg">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 #authScreen{position:fixed;inset:0;background:linear-gradient(135deg,#101828 0%,#1f2a44 55%,#635bff 130%);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999}#authScreen.hidden{display:none}.auth-box{width:min(440px,100%);background:#fff;border-radius:20px;padding:30px;box-shadow:0 25px 70px rgba(0,0,0,.25)}.auth-logo{font-size:25px;font-weight:900;color:#172033}.auth-logo span{display:block;color:#718096;font-size:12px;font-weight:500;margin-top:3px}.auth-box h2{margin:24px 0 7px;font-size:24px}.auth-box p{color:#718096;font-size:13px;line-height:1.6}.auth-form{display:grid;gap:12px;margin-top:18px}.auth-field label{font-size:12px;color:#718096;display:block;margin-bottom:6px}.auth-field input{width:100%;padding:12px;border:1px solid #e7ebf2;border-radius:9px;outline:none}.auth-field input:focus{border-color:#635bff;box-shadow:0 0 0 3px rgba(99,91,255,.1)}.auth-actions{display:grid;gap:9px;margin-top:8px}.auth-msg{font-size:12px;padding:10px 12px;border-radius:8px;display:none}.auth-msg.show{display:block}.auth-msg.error{background:#fee2e2;color:#991b1b}.auth-msg.success{background:#dcfce7;color:#166534}.auth-switch{text-align:center;margin-top:15px;font-size:12px;color:#718096}.auth-switch button{border:0;background:none;color:#635bff;font-weight:700;cursor:pointer}.cloud-badge{display:inline-block;background:#dcfce7;color:#166534;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:800;margin-left:6px;vertical-align:middle}.user-chip{display:flex;align-items:center;gap:8px}.user-email{font-size:12px;color:#718096}.logout-btn{font-size:12px;padding:8px 11px}.loading{opacity:.65;pointer-events:none}
@@ -370,6 +380,7 @@
   <button onclick="document.getElementById('importFile').click();toggleMobileMore()">⇧ Import Backup</button>
   <button onclick="document.getElementById('importCSVFile').click();toggleMobileMore()">⇧ Import CSV</button>
   <button onclick="downloadCSVTemplate();toggleMobileMore()">▤ CSV Template</button>
+  <button id="installAppBtn" onclick="installGrowthScope()">📲 Install GrowthScope</button>
   <button onclick="exportCSV();toggleMobileMore()">⇩ Export CSV</button>
   <button onclick="clearAllData();toggleMobileMore()">🗑 Clear Data</button>
   <button onclick="toggleMobileMore()">✕ Tutup</button>
@@ -807,6 +818,41 @@ function toggleMobileMore(){
   document.getElementById('mobileMorePanel')?.classList.toggle('open');
 }
 document.querySelectorAll('[data-mobile-page]').forEach(b=>b.addEventListener('click',()=>mobileNavigate(b.dataset.mobilePage)));
+
+let deferredInstallPrompt = null;
+function isStandaloneMode(){
+  return window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function updateInstallButton(){
+  const btn=document.getElementById('installAppBtn');
+  if(!btn) return;
+  btn.style.display=(deferredInstallPrompt && !isStandaloneMode())?'block':'none';
+}
+window.addEventListener('beforeinstallprompt',event=>{
+  event.preventDefault();
+  deferredInstallPrompt=event;
+  updateInstallButton();
+});
+window.addEventListener('appinstalled',()=>{
+  deferredInstallPrompt=null;
+  updateInstallButton();
+});
+async function installGrowthScope(){
+  if(!deferredInstallPrompt){
+    alert('GrowthScope belum menampilkan prompt install. Di Chrome Android, buka menu ⋮ lalu pilih "Tambahkan ke layar utama" atau "Install app".');
+    return;
+  }
+  deferredInstallPrompt.prompt();
+  const choice=await deferredInstallPrompt.userChoice;
+  if(choice?.outcome==='accepted') deferredInstallPrompt=null;
+  updateInstallButton();
+}
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('PWA service worker:',err));
+  });
+}
+updateInstallButton();
 
 async function exportJSON(){const payload={version:'2.1-cloud',exportedAt:new Date().toISOString(),workspace,data,plans};downloadBlob(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),'smga-cloud-backup.json')}
 function downloadBlob(blob,filename){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},500)}
