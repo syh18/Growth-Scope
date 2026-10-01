@@ -1,0 +1,8 @@
+{
+  "appId": "com.growthscope.app",
+  "appName": "GrowthScope",
+  "webDir": ".",
+  "android": {
+    "backgroundColor": "#101828"
+  }
+}
