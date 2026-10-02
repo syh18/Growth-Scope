@@ -123,7 +123,7 @@
     <div class="auth-logo auth-brand"><img class="login-logo-img" src="./icon.svg" alt="GrowthScope Logo"><div>GrowthScope <span>Social Media Growth Analyzer · Cloud</span></div></div>
     <div id="loginPanel">
       <h2>Login ke GrowthScope</h2><p>Masuk untuk mengakses workspace dan data analitik yang tersimpan di cloud.</p>
-      <form id="loginForm" class="auth-form">
+      <form id="loginForm" class="auth-form" onsubmit="login(event); return false;">
         <div class="auth-field"><label>Email</label><input id="loginEmail" type="email" required placeholder="nama@email.com"></div>
         <div class="auth-field"><label>Password</label><input id="loginPassword" type="password" required placeholder="••••••••"></div>
         <div id="loginMsg" class="auth-msg"></div>
@@ -133,7 +133,7 @@
     </div>
     <div id="registerPanel" style="display:none">
       <h2>Buat akun GrowthScope</h2><p>Buat akun untuk mengakses SMGA. Untuk testing saat ini, akun tidak perlu verifikasi email.</p>
-      <form id="registerForm" class="auth-form">
+      <form id="registerForm" class="auth-form" onsubmit="register(event); return false;">
         <div class="auth-field"><label>Nama</label><input id="registerName" required placeholder="Nama kamu"></div>
         <div class="auth-field"><label>Email</label><input id="registerEmail" type="email" required placeholder="nama@email.com"></div>
         <div class="auth-field"><label>Password</label><input id="registerPassword" type="password" minlength="6" required placeholder="Minimal 6 karakter"></div>
