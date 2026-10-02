@@ -174,6 +174,29 @@ body{background:var(--gs-bg)}
 .profile-preview{display:flex;align-items:center;gap:12px;margin-top:12px;padding:14px;border:1px solid #e7ebf2;border-radius:12px}
 @media(max-width:800px){.matrix-guide{grid-template-columns:1fr}.user-name-top{display:none}}
 .logo-mark{width:38px;height:38px;object-fit:contain;vertical-align:middle;flex:0 0 auto}.brand-logo{display:flex;align-items:center;gap:9px;margin:0 10px 28px}.brand-logo .brand-text{font-weight:800;font-size:18px}.brand-logo .brand-text span{display:block;color:#aab3c5;font-size:11px;font-weight:500;margin-top:4px}.auth-brand{display:flex;align-items:center;gap:10px}.auth-brand img{width:46px;height:46px;object-fit:contain}.sidebar-logo-img{width:38px;height:38px;object-fit:contain}.login-logo-img{width:52px;height:52px;object-fit:contain}.user-avatar-top img,.profile-avatar img{object-fit:cover}
+
+/* GrowthScope Workspace Switcher */
+.workspace-switcher{position:relative}
+.workspace-chip{cursor:pointer;text-align:left}
+.workspace-chip .workspace-chevron{color:#98a2b3;font-size:12px;margin-left:2px}
+.workspace-popover{display:none;position:absolute;right:0;top:calc(100% + 8px);width:310px;background:rgba(255,255,255,.98);border:1px solid #e4e8f0;border-radius:17px;padding:10px;box-shadow:0 24px 70px rgba(15,23,42,.18);z-index:350;animation:accountPop .18s ease}
+.workspace-switcher.open .workspace-popover{display:block}
+.workspace-popover-head{padding:8px 9px 10px;border-bottom:1px solid #edf0f5;margin-bottom:6px}
+.workspace-popover-head small{display:block;font-size:9px;font-weight:900;letter-spacing:1.2px;color:#98a2b3}
+.workspace-popover-head b{display:block;font-size:12px;color:#172033;margin-top:5px}
+.workspace-list{display:grid;gap:4px;max-height:220px;overflow:auto}
+.workspace-item{width:100%;border:0;background:#fff;border-radius:11px;padding:10px;display:flex;align-items:center;gap:9px;text-align:left;cursor:pointer}
+.workspace-item:hover{background:#f5f6fb}
+.workspace-item.active{background:#f0efff}
+.workspace-item .ws-icon{width:31px;height:31px;flex:0 0 31px;border-radius:9px;background:#eeedff;color:#635bff;display:flex;align-items:center;justify-content:center;font-weight:900}
+.workspace-item-text{min-width:0;flex:1}.workspace-item-text b,.workspace-item-text span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.workspace-item-text b{font-size:10px;color:#263247}.workspace-item-text span{font-size:9px;color:#8b95a7;margin-top:2px}
+.workspace-role{font-size:8px!important;text-transform:uppercase;letter-spacing:.6px;font-weight:800!important;color:#635bff!important;margin-top:3px!important}
+.workspace-action{width:100%;border:1px solid #e1defe;background:#f5f3ff;color:#554cf0;padding:10px;border-radius:10px;font-size:10px;font-weight:800;cursor:pointer;text-align:left;margin-top:7px}
+.workspace-action:hover{background:#eeebff}
+.workspace-modal-box{width:min(520px,100%)}
+.workspace-modal-icon{width:46px;height:46px;border-radius:14px;background:#eeedff;color:#635bff;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px}
+@media(max-width:760px){.workspace-popover{position:fixed;left:12px;right:12px;top:72px;width:auto}.workspace-chip{display:none}}
+
 /* GrowthScope Modern UI */
 :root{--accent:#635bff;--accent-2:#4f46e5;--sidebar:#0b1220;--sidebar-soft:#121b2d;--ink:#142033;--muted:#718096;--line:#e8edf5;--bg:#f7f9fc;--shadow-soft:0 14px 38px rgba(15,23,42,.07)}
 body{background:var(--bg)}
@@ -298,6 +321,17 @@ body{background:var(--bg)}
   </div>
 </div>
 
+<div id="workspaceModal" class="modal">
+  <div class="modal-box workspace-modal-box">
+    <div class="modal-head"><div><div class="workspace-modal-icon">⌂</div><h2 style="margin:0">Buat Workspace</h2><p style="margin:6px 0 0;color:#718096;font-size:12px">Pisahkan project, brand, atau client dalam workspace yang berbeda.</p></div><button class="btn light" onclick="closeWorkspaceModal()">✕</button></div>
+    <div class="form" style="grid-template-columns:1fr;margin-top:18px">
+      <div class="field"><label>Nama Workspace</label><input id="newWorkspaceName" placeholder="Contoh: Zemangat Marketing"></div>
+      <div class="field"><label>Deskripsi</label><textarea id="newWorkspaceDescription" placeholder="Contoh: Workspace khusus strategi konten Zemangat"></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn light" onclick="closeWorkspaceModal()">Batal</button><button class="btn primary" onclick="createWorkspace()">Buat Workspace</button></div>
+  </div>
+</div>
+
 <div class="app">
 <aside class="side">
   <div class="brand-logo">
@@ -336,7 +370,18 @@ body{background:var(--bg)}
     <p id="pageSubtitle">Measure. Understand. Improve.</p>
   </div>
   <div class="top-actions">
-    <div class="workspace-chip"><span class="workspace-chip-icon">⌂</span><div><small>WORKSPACE</small><b id="topWorkspaceName">My Workspace</b></div></div>
+    <div class="workspace-switcher" id="workspaceSwitcher">
+  <button class="workspace-chip" type="button" onclick="toggleWorkspaceMenu(event)" aria-label="Pilih workspace">
+    <span class="workspace-chip-icon">⌂</span>
+    <div><small>WORKSPACE</small><b id="topWorkspaceName">My Workspace</b></div>
+    <span class="workspace-chevron">⌄</span>
+  </button>
+  <div class="workspace-popover" id="workspacePopover">
+    <div class="workspace-popover-head"><small>WORKSPACE</small><b>Pilih workspace</b></div>
+    <div id="workspaceList" class="workspace-list"></div>
+    <button class="workspace-action" type="button" onclick="openWorkspaceModal()">＋ Buat workspace baru</button>
+  </div>
+</div>
     <button class="btn primary top-add" onclick="openModal()">＋ <span>Add Content</span></button>
     <div class="profile-menu" id="profileMenu">
       <button class="user-chip" type="button" onclick="toggleAccountMenu(event)" aria-label="Account menu">
@@ -751,6 +796,91 @@ async function loadCloudData(){
 let bootUserPromise=null;
 let bootUserId=null;
 
+async function refreshWorkspaces(){
+  if(!currentUser)return;
+  const [{data:wsRows,error:wsError},{data:memberRows,error:memberError}]=await Promise.all([
+    db.from('workspaces').select('*').order('created_at',{ascending:true}),
+    db.from('workspace_members').select('workspace_id,role,status').eq('user_id',currentUser.id).eq('status','active')
+  ]);
+  if(wsError)throw wsError;
+  if(memberError)throw memberError;
+  const roleMap=new Map((memberRows||[]).map(m=>[m.workspace_id,m.role]));
+  workspaces=(wsRows||[]).map(w=>({...w,role:w.owner_id===currentUser.id?'owner':(roleMap.get(w.id)||'member')}));
+  renderWorkspaceSwitcher();
+}
+function renderWorkspaceSwitcher(){
+  const list=document.getElementById('workspaceList');
+  const top=document.getElementById('topWorkspaceName');
+  if(top)top.textContent=workspace?.name||'My Workspace';
+  if(!list)return;
+  if(!workspaces.length){
+    list.innerHTML='<div style="padding:12px;color:#8b95a7;font-size:10px">Belum ada workspace.</div>';
+    return;
+  }
+  list.innerHTML=workspaces.map(w=>`<button class="workspace-item ${workspace?.id===w.id?'active':''}" onclick="selectWorkspace('${w.id}')">
+    <span class="ws-icon">⌂</span><span class="workspace-item-text"><b>${esc(w.name)}</b><span>${esc(w.description||'Tanpa deskripsi')}</span><span class="workspace-role">${esc(w.role||'member')}</span></span>
+    ${workspace?.id===w.id?'<span style="color:#635bff;font-weight:900">✓</span>':''}
+  </button>`).join('');
+}
+function toggleWorkspaceMenu(event){
+  event?.stopPropagation();
+  const sw=document.getElementById('workspaceSwitcher');
+  if(!sw)return;
+  sw.classList.toggle('open');
+  renderWorkspaceSwitcher();
+}
+function closeWorkspaceMenu(){document.getElementById('workspaceSwitcher')?.classList.remove('open')}
+async function selectWorkspace(id){
+  closeWorkspaceMenu();
+  const selected=workspaces.find(w=>w.id===id);
+  if(!selected || selected.id===workspace?.id)return;
+  try{
+    document.body.classList.add('loading');
+    workspace=selected;
+    currentWorkspaceRole=selected.role||'member';
+    window.currentWorkspaceRole=currentWorkspaceRole;
+    await loadCloudData();
+    renderWorkspaceSwitcher();
+  }catch(err){
+    alert('Gagal mengganti workspace: '+(err?.message||'Terjadi kesalahan.'));
+  }finally{
+    document.body.classList.remove('loading');
+  }
+}
+function openWorkspaceModal(){
+  closeWorkspaceMenu();
+  const modal=document.getElementById('workspaceModal');
+  document.getElementById('newWorkspaceName').value='';
+  document.getElementById('newWorkspaceDescription').value='';
+  modal.classList.add('open');
+  setTimeout(()=>document.getElementById('newWorkspaceName')?.focus(),50);
+}
+function closeWorkspaceModal(){document.getElementById('workspaceModal')?.classList.remove('open')}
+async function createWorkspace(){
+  const name=document.getElementById('newWorkspaceName').value.trim();
+  const description=document.getElementById('newWorkspaceDescription').value.trim();
+  if(!name){alert('Nama workspace wajib diisi.');return}
+  if(!currentUser){alert('Silakan login terlebih dahulu.');return}
+  try{
+    const {data:newWs,error}=await db.from('workspaces').insert({name,description,owner_id:currentUser.id}).select().single();
+    if(error)throw error;
+    workspace=newWs;
+    currentWorkspaceRole='owner';
+    window.currentWorkspaceRole='owner';
+    await refreshWorkspaces();
+    await loadCloudData();
+    closeWorkspaceModal();
+    renderWorkspaceSwitcher();
+  }catch(err){
+    console.error('Create workspace error:',err);
+    alert('Gagal membuat workspace: '+(err?.message||'Terjadi kesalahan.'));
+  }
+}
+document.addEventListener('click',e=>{
+  const sw=document.getElementById('workspaceSwitcher');
+  if(sw && !sw.contains(e.target))closeWorkspaceMenu();
+});
+
 function showWelcomeIntro(user){
   return new Promise(resolve=>{
     const overlay=document.getElementById('welcomeOverlay');
@@ -791,6 +921,7 @@ async function bootUser(user,showIntro=false){
 
     try{
       await ensureWorkspace();
+      await refreshWorkspaces();
       await loadCloudData();
       setAuthVisible(false);
       if(showIntro) await showWelcomeIntro(user);
@@ -837,6 +968,7 @@ async function init(){
         currentUser=null;
         workspace=null;
         currentWorkspaceRole=null;
+        workspaces=[];
         data=[];
         plans=[];
         setAuthVisible(true);
