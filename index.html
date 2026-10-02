@@ -168,7 +168,7 @@ body{background:var(--bg)}
 .notice{border-radius:12px}
 .welcome-overlay{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;background:rgba(7,13,25,.48);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);overflow:hidden;opacity:0}
 .welcome-overlay.show{display:flex;animation:welcomeIn .35s ease forwards}
-.welcome-overlay.hide{animation:welcomeOut .45s ease forwards}
+.welcome-overlay.hide{display:flex;animation:welcomeOut .45s ease forwards}
 .welcome-card{position:relative;width:min(430px,calc(100% - 40px));padding:40px 34px 34px;text-align:center;background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.8);border-radius:26px;box-shadow:0 35px 90px rgba(0,0,0,.25);overflow:hidden}
 .welcome-card:before{content:"";position:absolute;left:50%;top:-120px;transform:translateX(-50%);width:280px;height:180px;background:rgba(99,91,255,.15);filter:blur(30px);border-radius:50%}
 .welcome-logo-wrap{position:relative;width:68px;height:68px;margin:0 auto 18px;border-radius:20px;background:#fff;padding:8px;box-shadow:0 12px 30px rgba(99,91,255,.18)}
@@ -687,7 +687,7 @@ function showWelcomeIntro(user){
     const app=document.querySelector('.app');
     const name=(user?.user_metadata?.full_name||user?.user_metadata?.name||user?.email?.split('@')[0]||'User').trim();
     const nameEl=document.getElementById('welcomeName');
-    if(nameEl) nameEl.textContent=name.split(/\\s+/)[0]||name;
+    if(nameEl) nameEl.textContent=name.split(/\s+/)[0]||name;
     if(!overlay){resolve();return;}
     app?.classList.add('welcome-blur');
     overlay.classList.remove('hide');
