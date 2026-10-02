@@ -741,7 +741,7 @@ async function callGrowthScopeAI(mode, extra={}){
 }
 function parseAIJson(text){
   try{return JSON.parse(text)}catch{}
-  const cleaned=String(text||'').replace(/^\s*\`\`\`json\s*/,'').replace(/\s*\`\`\`\s*$/,'').trim();
+  const cleaned=String(text||'').replace(/^\s*```json\s*/,'').replace(/\s*```\s*$/,'').trim();
   try{return JSON.parse(cleaned)}catch{return null}
 }
 function aiLoading(box,label='AI sedang menganalisis...'){
@@ -1018,9 +1018,9 @@ async function clearAllData(){
   const contentCount=data.length;
   const planCount=plans.length;
   const confirmed=confirm(
-    \`Hapus SEMUA data dari workspace "\${workspace.name}"?\\n\\n\`+
-    \`• \${contentCount} konten\\n\`+
-    \`• \${planCount} ide planner\\n\\n\`+
+    `Hapus SEMUA data dari workspace "${workspace.name}"?\\n\\n`+
+    `• ${contentCount} konten\\n`+
+    `• ${planCount} ide planner\\n\\n`+
     'Tindakan ini tidak dapat dibatalkan.'
   );
 
@@ -1058,9 +1058,9 @@ async function clearAllData(){
     showPage('dashboard');
 
     alert(
-      \`Semua data berhasil dihapus dari workspace "\${workspace.name}".\\n\\n\`+
-      \`Konten: \${contentCount}\\n\`+
-      \`Planner: \${planCount}\`
+      `Semua data berhasil dihapus dari workspace "${workspace.name}".\\n\\n`+
+      `Konten: ${contentCount}\\n`+
+      `Planner: ${planCount}`
     );
   }catch(err){
     console.error('Clear data error:',err);
