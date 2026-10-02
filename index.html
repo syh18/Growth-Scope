@@ -280,7 +280,147 @@ body{background:var(--bg)}
  .welcome-card h2{font-size:26px}
 }
 </style>
-</head>
+<style>
+/* GrowthScope Mobile UI Refresh */
+@media(max-width:760px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  body{font-size:14px;-webkit-tap-highlight-color:transparent}
+  .app{display:block!important;min-height:100svh;width:100%;filter:none}
+  .main{
+    width:100%!important;max-width:none!important;margin:0!important;
+    padding:0 14px calc(112px + env(safe-area-inset-bottom))!important;
+  }
+
+  /* Mobile header */
+  .top{
+    position:sticky!important;top:0;z-index:900;
+    margin:0 -14px 16px!important;padding:12px 14px!important;
+    min-height:82px!important;height:auto!important;
+    background:rgba(248,250,252,.88)!important;
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border-bottom:1px solid rgba(226,230,239,.9)!important;
+    display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+    gap:10px!important;align-items:center!important;
+  }
+  .top-heading{min-width:0}
+  .top .eyebrow{font-size:8px!important;letter-spacing:1.2px!important;margin-bottom:4px!important}
+  .top h1{font-size:27px!important;line-height:1.05!important;letter-spacing:-.7px!important}
+  .top p{font-size:11px!important;margin:5px 0 0!important;color:#7b8799!important}
+  .top-actions{display:flex!important;align-items:center!important;gap:8px!important;min-width:0}
+  .workspace-switcher{display:none!important}
+  .top-add{
+    width:44px!important;height:44px!important;min-width:44px!important;
+    padding:0!important;border-radius:14px!important;font-size:0!important;
+    display:inline-flex!important;align-items:center!important;justify-content:center!important;
+    box-shadow:0 9px 22px rgba(99,91,255,.22)
+  }
+  .top-add::before{content:"+";font-size:25px!important;line-height:1;font-weight:500}
+  .profile-menu{position:relative!important}
+  .profile-menu>.user-chip{
+    width:44px!important;height:44px!important;padding:3px!important;
+    border-radius:50%!important;background:#fff!important;border:1px solid #e5e9f1!important;
+    box-shadow:0 7px 20px rgba(23,32,51,.08)!important;justify-content:center!important
+  }
+  .profile-menu .profile-mini,.profile-menu .profile-chevron{display:none!important}
+  .actions{gap:7px!important}
+
+  /* Dashboard spacing */
+  .section{margin-top:14px!important}
+  .card{border-radius:18px!important;padding:15px!important}
+  .notice{
+    border-radius:18px!important;padding:14px!important;font-size:12px!important;
+    line-height:1.55!important;box-shadow:0 5px 20px rgba(99,91,255,.05)
+  }
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+  .metric{min-height:94px!important;padding:14px!important}
+  .metric .label{font-size:10px!important}
+  .metric .value{font-size:24px!important;margin:7px 0!important}
+  .section-title{margin-bottom:9px!important}
+  .section-title h2{font-size:15px!important}
+
+  /* Tables / long content */
+  .table-wrap{width:100%!important;overflow-x:auto!important}
+  .table{min-width:720px!important}
+  .chart-wrap{width:100%!important;overflow:hidden!important}
+  canvas{max-width:100%!important;height:auto!important}
+
+  /* Mobile bottom navigation */
+  .mobile-bottom-nav{
+    position:fixed!important;left:10px!important;right:10px!important;
+    bottom:calc(9px + env(safe-area-inset-bottom))!important;
+    height:70px!important;padding:6px!important;
+    display:grid!important;grid-template-columns:repeat(5,1fr)!important;
+    background:rgba(23,31,56,.97)!important;
+    border:1px solid rgba(255,255,255,.1)!important;border-radius:22px!important;
+    box-shadow:0 18px 45px rgba(15,23,42,.32)!important;
+    z-index:9998!important;backdrop-filter:blur(18px)!important;
+    -webkit-backdrop-filter:blur(18px)!important
+  }
+  .mobile-bottom-nav button{
+    min-width:0!important;border:0!important;background:transparent!important;
+    color:#aeb8cc!important;border-radius:16px!important;
+    font-size:10px!important;font-weight:700!important;
+    display:flex!important;flex-direction:column!important;
+    align-items:center!important;justify-content:center!important;gap:4px!important
+  }
+  .mobile-bottom-nav button span{font-size:18px!important;line-height:1!important}
+  .mobile-bottom-nav button.active{
+    background:linear-gradient(135deg,#7168ff,#5b53f4)!important;
+    color:#fff!important;box-shadow:0 7px 18px rgba(99,91,255,.25)
+  }
+
+  /* More menu = compact bottom sheet, never a giant overlay */
+  .mobile-more-panel{
+    position:fixed!important;
+    left:12px!important;right:12px!important;
+    bottom:calc(88px + env(safe-area-inset-bottom))!important;
+    width:auto!important;max-height:min(62vh,520px)!important;
+    overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;
+    display:none!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;padding:12px!important;
+    background:rgba(255,255,255,.97)!important;
+    border:1px solid #e4e8f0!important;border-radius:22px!important;
+    box-shadow:0 25px 70px rgba(15,23,42,.24)!important;
+    z-index:9997!important
+  }
+  .mobile-more-panel.open{
+    display:grid!important;
+    animation:mobileSheetIn .2s ease-out both
+  }
+  .mobile-more-panel::before{
+    content:"Quick Actions";
+    grid-column:1/-1;
+    font-size:11px;font-weight:900;letter-spacing:1px;
+    color:#7b8799;padding:2px 4px 1px
+  }
+  .mobile-more-panel button{
+    min-height:54px!important;
+    border:1px solid #e7ebf2!important;
+    background:#f8f9fc!important;
+    border-radius:14px!important;
+    padding:11px!important;text-align:left!important;
+    font-size:11px!important;line-height:1.25!important;
+    font-weight:800!important;color:#172033!important;
+  }
+  .mobile-more-panel button:active{transform:scale(.98);background:#f0efff!important}
+  .mobile-more-panel button:last-child{
+    grid-column:1/-1;text-align:center!important;
+    background:#fff!important;color:#7b8799!important
+  }
+
+  /* Better touch targets */
+  .btn,.nav button,.workspace-chip,.account-action{min-height:42px}
+  input,select,textarea{font-size:16px!important}
+  .modal{padding:10px!important}
+  .modal-box{max-height:88svh!important;padding:16px!important;border-radius:20px!important}
+
+  @keyframes mobileSheetIn{
+    from{opacity:0;transform:translateY(12px) scale(.98)}
+    to{opacity:1;transform:none}
+  }
+}
+</style></head>
 <body>
 <div id="authScreen">
   <div class="auth-box">
