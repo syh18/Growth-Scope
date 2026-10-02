@@ -562,22 +562,105 @@ async function loadCloudData(){
   if(pe) throw pe; plans=(prs||[]).map(dbToPlan);
   render(); renderWorkspace();
 }
+let bootUserPromise=null;
+let bootUserId=null;
+
 async function bootUser(user){
-  pendingProfileAvatar=null; currentUser=user; document.getElementById('currentUserEmail').textContent=user.email||''; renderUserSettings(); setAuthVisible(false);
-  try{await ensureWorkspace();await loadCloudData();}catch(e){console.error(e);alert('Gagal memuat workspace/data: '+e.message);}
+  if(!user?.id) return;
+  if(bootUserPromise && bootUserId===user.id) return bootUserPromise;
+
+  bootUserId=user.id;
+  bootUserPromise=(async()=>{
+    currentUser=user;
+    currentWorkspaceRole=null;
+    pendingProfileAvatar=null;
+    const emailEl=document.getElementById('currentUserEmail');
+    if(emailEl) emailEl.textContent=user.email||'';
+
+    try{
+      await ensureWorkspace();
+      await loadCloudData();
+      setAuthVisible(false);
+      return true;
+    }catch(e){
+      console.error('GrowthScope boot error:',e);
+      currentUser=null;
+      workspace=null;
+      currentWorkspaceRole=null;
+      data=[];
+      plans=[];
+      setAuthVisible(true);
+      showMsg('loginMsg','Login berhasil, tetapi workspace gagal dimuat: '+(e?.message||'Terjadi kesalahan. Silakan coba lagi.'),'error');
+      return false;
+    }finally{
+      bootUserPromise=null;
+    }
+  })();
+
+  return bootUserPromise;
 }
+
 async function init(){
-  document.getElementById('loginForm').addEventListener('submit',login);
-  document.getElementById('registerForm').addEventListener('submit',register);
-  const {data:{session}}=await db.auth.getSession();
-  if(session?.user) await bootUser(session.user); else setAuthVisible(true);
-  db.auth.onAuthStateChange(async(event,session)=>{
-    if(session?.user){await bootUser(session.user)}else{currentUser=null;workspace=null;currentWorkspaceRole=null;data=[];plans=[];setAuthVisible(true)}
-  });
+  try{
+    document.getElementById('loginForm').addEventListener('submit',login);
+    document.getElementById('registerForm').addEventListener('submit',register);
+
+    const {data:{session},error}=await db.auth.getSession();
+    if(error) throw error;
+
+    if(session?.user){
+      await bootUser(session.user);
+    }else{
+      setAuthVisible(true);
+    }
+
+    db.auth.onAuthStateChange((event,session)=>{
+      if(session?.user){
+        void bootUser(session.user);
+      }else{
+        bootUserId=null;
+        currentUser=null;
+        workspace=null;
+        currentWorkspaceRole=null;
+        data=[];
+        plans=[];
+        setAuthVisible(true);
+      }
+    });
+  }catch(err){
+    console.error('GrowthScope auth init error:',err);
+    setAuthVisible(true);
+    showMsg('loginMsg','Auth belum siap: '+(err?.message||'Gagal terhubung ke layanan login.'),'error');
+  }
 }
 async function login(e){
-  e.preventDefault(); const btn=e.submitter; btn.disabled=true;
-  try{const {error}=await db.auth.signInWithPassword({email:loginEmail.value.trim(),password:loginPassword.value});if(error)throw error;showMsg('loginMsg','Login berhasil.','success')}catch(err){showMsg('loginMsg',friendlyAuthError(err.message))}finally{btn.disabled=false}
+  e.preventDefault();
+  const btn=e.submitter;
+  const email=document.getElementById('loginEmail')?.value.trim()||'';
+  const password=document.getElementById('loginPassword')?.value||'';
+
+  if(!email || !password){
+    showMsg('loginMsg','Email dan password wajib diisi.','error');
+    return;
+  }
+
+  if(btn) btn.disabled=true;
+  showMsg('loginMsg','Sedang masuk ke GrowthScope...','success');
+
+  try{
+    const {data,error}=await db.auth.signInWithPassword({email,password});
+    if(error) throw error;
+
+    const ok=await bootUser(data?.user);
+    if(!ok) return;
+
+    showMsg('loginMsg','Login berhasil.','success');
+  }catch(err){
+    console.error('GrowthScope login error:',err);
+    showMsg('loginMsg',friendlyAuthError(err?.message||'Login gagal.'),'error');
+  }finally{
+    if(btn) btn.disabled=false;
+  }
 }
 async function register(e){
   e.preventDefault(); const btn=e.submitter; btn.disabled=true;
