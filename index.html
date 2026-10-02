@@ -1152,7 +1152,9 @@ function renderUserSettings(){
   const initial=(name||email||'U').trim().charAt(0).toUpperCase();
   const displayAvatar=pendingProfileAvatar===null?avatar:pendingProfileAvatar;
   if(pa)pa.innerHTML=renderAvatarImage(displayAvatar,initial);
-  if(ta)ta.innerHTML=renderAvatarImage(avatar,initial);\n  const ca=document.getElementById('accountCurrentAvatar'),cn=document.getElementById('accountCurrentName'),ce=document.getElementById('accountCurrentEmail');\n  if(ca)ca.innerHTML=renderAvatarImage(avatar,initial); if(cn)cn.textContent=name; if(ce)ce.textContent=email; renderAccountMenu();
+  if(ta)ta.innerHTML=renderAvatarImage(avatar,initial);
+  const ca=document.getElementById('accountCurrentAvatar'),cn=document.getElementById('accountCurrentName'),ce=document.getElementById('accountCurrentEmail');
+  if(ca)ca.innerHTML=renderAvatarImage(avatar,initial); if(cn)cn.textContent=name; if(ce)ce.textContent=email; renderAccountMenu();
 }
 async function saveUserSettings(){
   if(!currentUser)return;
