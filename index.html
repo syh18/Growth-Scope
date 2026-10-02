@@ -889,7 +889,7 @@ body{background:var(--bg)}
    <div class="field"><label>Format</label><select id="planFormat"><option>Carousel</option><option>Reels</option><option>Single Image</option><option>Story</option><option>Video</option></select></div>
    <div class="field"><label>Hook</label><select id="planHook"><option>Problem</option><option>Question</option><option>Curiosity</option><option>Statistic</option><option>Story</option></select></div>
    <div class="field"><label>CTA</label><input id="planCTA" value="Save"></div>
-   <div class="field"><label>Status</label><select id="planStatus"><option value="idea">Idea</option><option value="draft">Draft</option><option value="ready">Ready</option><option value="published">Published</option></select></div>
+   <div class="field"><label>Status</label><select id="planStatus"><option value="idea">Idea</option><option value="draft">Draft</option><option value="ready">Ready</option><option value="publish">Publish</option></select></div>
    <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea id="planNotes" placeholder="Catatan tambahan..."></textarea></div>
   </div>
   <div class="form-actions"><button type="button" class="btn light" onclick="closePlanModal()">Cancel</button><button class="btn primary">Save Planner</button></div>
@@ -1489,7 +1489,9 @@ async function savePlan(e){
   const id=document.getElementById('planEditId').value;
   const topic=document.getElementById('planTopic').value.trim();
   if(!topic){alert('Topic wajib diisi.');return}
-  const payload={workspace_id:workspace.id,created_by:currentUser.id,planned_date:document.getElementById('planDate').value||null,planned_time:document.getElementById('planTime').value||null,platform:document.getElementById('planPlatform').value,title:topic,topic,pillar:document.getElementById('planPillar').value.trim()||'General',format:document.getElementById('planFormat').value,hook:document.getElementById('planHook').value,cta:document.getElementById('planCTA').value.trim()||'Save',status:document.getElementById('planStatus').value,notes:document.getElementById('planNotes').value.trim()||null};
+  const selectedStatus=document.getElementById('planStatus').value;
+  const status=selectedStatus==='published'?'publish':selectedStatus;
+  const payload={workspace_id:workspace.id,created_by:currentUser.id,planned_date:document.getElementById('planDate').value||null,planned_time:document.getElementById('planTime').value||null,platform:document.getElementById('planPlatform').value,title:topic,topic,pillar:document.getElementById('planPillar').value.trim()||'General',format:document.getElementById('planFormat').value,hook:document.getElementById('planHook').value,cta:document.getElementById('planCTA').value.trim()||'Save',status,notes:document.getElementById('planNotes').value.trim()||null};
   const result=id?await db.from('content_plans').update(payload).eq('id',id).eq('workspace_id',workspace.id):await db.from('content_plans').insert(payload);
   if(result.error){alert('Gagal menyimpan planner: '+result.error.message);return}
   closePlanModal(); await loadCloudData();
