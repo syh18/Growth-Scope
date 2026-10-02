@@ -554,7 +554,7 @@ async function ensureWorkspace(){
   window.currentWorkspaceRole = currentWorkspaceRole;
   return newWs;
 }
-async function loadCloudData(){
+async async function loadCloudData(){
   if(!workspace)return;
   let {data:rows,error}=await db.from('contents').select('*').eq('workspace_id',workspace.id).order('content_date',{ascending:false}).order('created_at',{ascending:false});
   if(error) throw error; data=(rows||[]).map(dbToContent);
