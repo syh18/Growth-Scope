@@ -1185,7 +1185,9 @@ async function importCSV(event){
   }
 }
 
-// Matrix hook after every renderconst _oldRender=render; render=async function(){await _oldRender();renderGroupsMatrix(averages())};
+// Matrix hook after every render
+const _oldRender=render;
+render=async function(){await _oldRender();renderGroupsMatrix(averages())};
 
 init();
 </script>
