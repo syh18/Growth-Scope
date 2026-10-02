@@ -614,17 +614,30 @@ async function init(){
       setAuthVisible(true);
     }
 
+    // Jangan melakukan query Supabase langsung di dalam callback auth.
+    // Supabase dapat menahan lock auth jika callback menjalankan operasi
+    // seperti from(...), sehingga halaman terlihat kembali ke login.
     db.auth.onAuthStateChange((event,session)=>{
-      if(session?.user){
-        void bootUser(session.user);
-      }else{
+      if(event==='SIGNED_OUT' || !session?.user){
         bootUserId=null;
+        bootUserPromise=null;
         currentUser=null;
         workspace=null;
         currentWorkspaceRole=null;
         data=[];
         plans=[];
         setAuthVisible(true);
+        return;
+      }
+
+      // Login ditangani langsung oleh login(); callback hanya dijadwalkan
+      // setelah stack auth selesai agar tidak terjadi auth-lock/race.
+      if(event==='SIGNED_IN' || event==='INITIAL_SESSION'){
+        setTimeout(()=>{
+          if(!currentUser || currentUser.id!==session.user.id){
+            void bootUser(session.user);
+          }
+        },0);
       }
     });
   }catch(err){
@@ -651,6 +664,8 @@ async function login(e){
     const {data,error}=await db.auth.signInWithPassword({email,password});
     if(error) throw error;
 
+    // Boot dilakukan setelah signIn selesai, bukan dari callback auth.
+    // Ini mencegah race/lock ketika ensureWorkspace() membaca Supabase.
     const ok=await bootUser(data?.user);
     if(!ok) return;
 
