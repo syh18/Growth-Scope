@@ -91,6 +91,65 @@
   .mobile-more-panel button{border:1px solid var(--line);background:#f8fafc;border-radius:11px;padding:12px;text-align:left;font-weight:700;color:#172033}
 }
 @media(min-width:761px){.mobile-bottom-nav,.mobile-more-panel{display:none!important}}
+
+/* GrowthScope Modern UI Refresh */
+:root{--gs-bg:#f5f7fb;--gs-panel:#fff;--gs-ink:#172033;--gs-muted:#7b8799;--gs-purple:#635bff;--gs-purple2:#7c72ff;--gs-line:#e8ebf2}
+body{background:var(--gs-bg)}
+.side{background:linear-gradient(180deg,#0c1324 0%,#101a2e 55%,#0d1526 100%);border-right:1px solid rgba(255,255,255,.06);padding:20px 13px 16px;box-shadow:18px 0 45px rgba(15,23,42,.08)}
+.brand-logo{padding:5px 8px 18px;margin:0 0 12px;border-bottom:1px solid rgba(255,255,255,.07);gap:10px}
+.brand-logo .brand-text{font-size:16px;letter-spacing:-.3px;color:#fff}
+.brand-logo .brand-text span{font-size:9px;color:#7f8ca3;letter-spacing:.1px}
+.sidebar-section-label{font-size:9px;letter-spacing:1.4px;color:#65738a;font-weight:900;padding:7px 9px}
+.nav{gap:4px}
+.nav button{height:43px;border-radius:11px;color:#91a0b6;padding:6px 9px;transition:.2s}
+.nav button:hover{background:rgba(255,255,255,.05);color:#fff;transform:none}
+.nav button.active{background:linear-gradient(90deg,rgba(99,91,255,.24),rgba(99,91,255,.08));box-shadow:inset 3px 0 0 #756cff;color:#fff}
+.nav-icon{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.045);font-size:13px}
+.nav button.active .nav-icon{background:linear-gradient(135deg,#746cff,#554cf0)}
+.sidebar-tools{gap:6px}
+.sidebar-tools button{border:1px solid rgba(255,255,255,.055);background:rgba(255,255,255,.025);padding:9px;border-radius:11px}
+.sidebar-tools button:hover{background:rgba(255,255,255,.07);transform:translateY(-1px)}
+.sidebar-add{width:calc(100% - 10px);margin:0 5px 12px;border-radius:12px;background:linear-gradient(135deg,#746cff,#554cf0);box-shadow:0 10px 26px rgba(99,91,255,.25)}
+.sidebar-footer{padding:7px 10px}
+.top{background:transparent}
+.top-actions{gap:8px}
+.workspace-chip{background:rgba(255,255,255,.78);backdrop-filter:blur(12px);border-color:#e7eaf2}
+.profile-menu{z-index:200}
+.profile-menu .user-chip{border-color:#e4e8f0;background:rgba(255,255,255,.9);box-shadow:0 5px 18px rgba(15,23,42,.04)}
+.profile-menu.open .account-popover{display:block}
+.account-popover{display:none;position:absolute;right:0;top:calc(100% + 8px);width:290px;background:rgba(255,255,255,.98);border:1px solid #e5e9f1;border-radius:16px;padding:10px;box-shadow:0 22px 60px rgba(15,23,42,.16);z-index:300;animation:accountPop .18s ease}
+.account-popover-head{padding:8px 9px 10px;border-bottom:1px solid #edf0f5;margin-bottom:6px}
+.account-popover-head small{display:block;font-size:9px;font-weight:900;letter-spacing:1.2px;color:#98a2b3}
+.account-current{display:flex;align-items:center;gap:9px;margin-top:7px}
+.account-current .account-avatar{width:34px;height:34px}
+.account-current b{font-size:11px;display:block;color:#172033}
+.account-current span{font-size:9px;color:#8994a6;display:block;margin-top:2px;max-width:205px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.account-list{display:grid;gap:4px;max-height:180px;overflow:auto}
+.account-item{width:100%;display:flex;align-items:center;gap:9px;padding:9px;border:0;background:#fff;border-radius:10px;text-align:left;cursor:pointer}
+.account-item:hover{background:#f5f6fb}
+.account-item .account-avatar{width:31px;height:31px;flex:0 0 31px}
+.account-item-text{min-width:0;flex:1}
+.account-item-text b,.account-item-text span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.account-item-text b{font-size:10px;color:#263247}
+.account-item-text span{font-size:9px;color:#8b95a7;margin-top:2px}
+.account-remove{border:0;background:transparent;color:#a1a9b8;font-size:15px;cursor:pointer;padding:3px}
+.account-remove:hover{color:#ef4444}
+.account-action{width:100%;border:1px solid #e6e9f0;background:#f8f9fc;color:#39445a;padding:10px;border-radius:10px;font-size:10px;font-weight:800;cursor:pointer;text-align:left;margin-top:7px}
+.account-action:hover{background:#f0efff;color:#554cf0;border-color:#dcd9ff}
+.account-action.logout{background:#fff5f5;color:#b42318;border-color:#f3d5d5}
+.account-action.logout:hover{background:#feecec}
+@keyframes accountPop{from{opacity:0;transform:translateY(-5px) scale(.98)}to{opacity:1;transform:none}}
+.welcome-overlay{background:rgba(8,13,27,.58);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.welcome-card{width:min(460px,calc(100% - 32px));padding:42px 36px 34px;border-radius:28px;background:rgba(255,255,255,.9);box-shadow:0 35px 100px rgba(0,0,0,.3);transform:translateY(10px) scale(.97)}
+.welcome-overlay.show .welcome-card{animation:welcomeCardIn .5s cubic-bezier(.2,.8,.2,1) forwards}
+.welcome-overlay.hide .welcome-card{animation:welcomeCardOut .4s ease forwards}
+.welcome-kicker{font-size:9px;letter-spacing:2.5px;color:#635bff}
+.welcome-card h2{font-size:32px}
+.welcome-card p{font-size:13px}
+@keyframes welcomeCardIn{to{opacity:1;transform:none}}
+@keyframes welcomeCardOut{to{opacity:0;transform:translateY(-8px) scale(.98)}}
+.app.welcome-blur{filter:blur(12px);transform:scale(.995);transition:filter .45s ease,transform .45s ease}
+@media(max-width:760px){.account-popover{position:fixed;right:12px;top:72px;width:min(300px,calc(100vw - 24px))}.profile-menu.open .account-popover{display:block}}
 </style>
 
 <meta charset="UTF-8">
@@ -279,13 +338,24 @@ body{background:var(--bg)}
   <div class="top-actions">
     <div class="workspace-chip"><span class="workspace-chip-icon">⌂</span><div><small>WORKSPACE</small><b id="topWorkspaceName">My Workspace</b></div></div>
     <button class="btn primary top-add" onclick="openModal()">＋ <span>Add Content</span></button>
-    <div class="profile-menu">
-      <div class="user-chip">
+    <div class="profile-menu" id="profileMenu">
+      <button class="user-chip" type="button" onclick="toggleAccountMenu(event)" aria-label="Account menu">
         <span id="userAvatarTop" class="user-avatar-top">S</span>
         <div class="profile-mini"><b id="currentUserName"></b><span id="currentUserEmail"></span></div>
         <span class="profile-chevron">⌄</span>
+      </button>
+      <div class="account-popover" id="accountPopover">
+        <div class="account-popover-head">
+          <small>ACCOUNT</small>
+          <div class="account-current">
+            <span id="accountCurrentAvatar" class="account-avatar user-avatar-top">S</span>
+            <div><b id="accountCurrentName">User</b><span id="accountCurrentEmail"></span></div>
+          </div>
+        </div>
+        <div id="accountList" class="account-list"></div>
+        <button class="account-action" type="button" onclick="addAccount()">＋ Tambah akun</button>
+        <button class="account-action logout" type="button" onclick="logout()">↪ Logout</button>
       </div>
-      <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
     <input id="importCSVFile" type="file" accept=".csv,text/csv" style="display:none" onchange="importCSV(event)">
     <input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="importJSON(event)">
@@ -829,7 +899,74 @@ async function register(e){
   }catch(err){showMsg('registerMsg',friendlyAuthError(err.message))}finally{btn.disabled=false}
 }
 function friendlyAuthError(msg){const m=String(msg||'');if(m.toLowerCase().includes('invalid login'))return'Email atau password salah.';if(m.toLowerCase().includes('already registered'))return'Email ini sudah terdaftar. Silakan login.';if(m.toLowerCase().includes('email not confirmed'))return'Email belum diverifikasi. Cek inbox email kamu.';return m}
-async function logout(){await db.auth.signOut()}
+function getSavedAccounts(){
+  try{return JSON.parse(localStorage.getItem('growthscope_accounts')||'[]').filter(x=>x&&x.email)}
+  catch{return[]}
+}
+function saveAccountEmail(email){
+  if(!email)return;
+  const list=getSavedAccounts().filter(x=>x.email.toLowerCase()!==email.toLowerCase());
+  list.unshift({email});
+  localStorage.setItem('growthscope_accounts',JSON.stringify(list.slice(0,6)));
+}
+function removeSavedAccount(email,event){
+  event?.stopPropagation();
+  const list=getSavedAccounts().filter(x=>x.email.toLowerCase()!==String(email).toLowerCase());
+  localStorage.setItem('growthscope_accounts',JSON.stringify(list));
+  renderAccountMenu();
+}
+function accountInitial(email){
+  return String(email||'U').trim().charAt(0).toUpperCase();
+}
+function renderAccountMenu(){
+  const listEl=document.getElementById('accountList');
+  if(!listEl)return;
+  const accounts=getSavedAccounts();
+  const currentEmail=(currentUser?.email||'').toLowerCase();
+  listEl.innerHTML=accounts.map(a=>{
+    const active=a.email.toLowerCase()===currentEmail;
+    return '<button class="account-item" type="button" onclick="switchAccount(\''+esc(a.email)+'\')">'+
+      '<span class="account-avatar user-avatar-top">'+esc(accountInitial(a.email))+'</span>'+
+      '<span class="account-item-text"><b>'+esc(a.email.split('@')[0])+(active?' · Aktif':'')+'</b><span>'+esc(a.email)+'</span></span>'+
+      '<span class="account-remove" title="Hapus akun tersimpan" onclick="removeSavedAccount(\''+esc(a.email)+'\',event)">×</span>'+
+      '</button>';
+  }).join('');
+}
+function toggleAccountMenu(event){
+  event?.stopPropagation();
+  const menu=document.getElementById('profileMenu');
+  if(!menu)return;
+  menu.classList.toggle('open');
+  renderAccountMenu();
+}
+async function switchAccount(email){
+  document.getElementById('profileMenu')?.classList.remove('open');
+  await db.auth.signOut();
+  setAuthVisible(true);
+  const input=document.getElementById('loginEmail');
+  if(input)input.value=email||'';
+  document.getElementById('loginPassword')?.focus();
+  showLogin();
+}
+async function addAccount(){
+  document.getElementById('profileMenu')?.classList.remove('open');
+  if(currentUser?.email)saveAccountEmail(currentUser.email);
+  await db.auth.signOut();
+  setAuthVisible(true);
+  document.getElementById('loginEmail').value='';
+  document.getElementById('loginPassword').value='';
+  showLogin();
+  document.getElementById('loginEmail').focus();
+}
+async function logout(){
+  if(currentUser?.email)saveAccountEmail(currentUser.email);
+  document.getElementById('profileMenu')?.classList.remove('open');
+  await db.auth.signOut();
+}
+document.addEventListener('click',e=>{
+  const menu=document.getElementById('profileMenu');
+  if(menu && !menu.contains(e.target))menu.classList.remove('open');
+});
 
 async function render(){
   data.forEach(calc); const a=averages(); data.forEach(x=>{x.score=score(x,a);x.diagnosis=diagnosis(x,a)});
@@ -1015,7 +1152,7 @@ function renderUserSettings(){
   const initial=(name||email||'U').trim().charAt(0).toUpperCase();
   const displayAvatar=pendingProfileAvatar===null?avatar:pendingProfileAvatar;
   if(pa)pa.innerHTML=renderAvatarImage(displayAvatar,initial);
-  if(ta)ta.innerHTML=renderAvatarImage(avatar,initial);
+  if(ta)ta.innerHTML=renderAvatarImage(avatar,initial);\n  const ca=document.getElementById('accountCurrentAvatar'),cn=document.getElementById('accountCurrentName'),ce=document.getElementById('accountCurrentEmail');\n  if(ca)ca.innerHTML=renderAvatarImage(avatar,initial); if(cn)cn.textContent=name; if(ce)ce.textContent=email; renderAccountMenu();
 }
 async function saveUserSettings(){
   if(!currentUser)return;
