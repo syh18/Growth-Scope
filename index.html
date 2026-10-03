@@ -1748,119 +1748,95 @@ function importJSON(){alert('Import JSON akan kita aktifkan setelah versi cloud 
 async function importCSV(event){
   const file=event?.target?.files?.[0];
   if(!file) return;
-  if(!workspace){
-    alert('Workspace belum siap. Silakan login kembali.');
-    return;
-  }
+  if(!workspace){ alert('Workspace belum siap. Silakan login kembali.'); return; }
 
   try{
-    const text=(await file.text()).replace(/^\uFEFF/,'');
-    const rows=[];
-    let row=[], cell='', inQuotes=false;
+    const text=await file.text();
+    const clean=text.replace(/^\uFEFF/,'');
+    if(!clean.trim()) throw new Error('CSV kosong.');
 
-    for(let i=0;i<text.length;i++){
-      const ch=text[i], next=text[i+1];
+    const firstLine=(clean.split(/\r?\n/)[0]||'');
+    const delimiter=(firstLine.split(';').length>firstLine.split(',').length)
+      ? ';' : (firstLine.split('\t').length>firstLine.split(',').length ? '\t' : ',');
+
+    const rows=[]; let row=[], cell='', inQuotes=false;
+    for(let i=0;i<clean.length;i++){
+      const ch=clean[i], next=clean[i+1];
       if(ch==='"'){
-        if(inQuotes && next==='"'){ cell+='"'; i++; }
-        else inQuotes=!inQuotes;      }else if(ch===',' && !inQuotes){
-        row.push(cell); cell='';
+        if(inQuotes && next==='"'){ cell+='"'; i++; } else inQuotes=!inQuotes;
+      }else if(ch===delimiter && !inQuotes){ row.push(cell); cell='';
       }else if((ch==='\n'||ch==='\r') && !inQuotes){
         if(ch==='\r' && next==='\n') i++;
         row.push(cell);
         if(row.some(v=>String(v).trim()!=='')) rows.push(row);
         row=[]; cell='';
-      }else{
-        cell+=ch;
-      }
+      }else cell+=ch;
     }
-
-    if(cell!=='' || row.length){
-      row.push(cell);
-      if(row.some(v=>String(v).trim()!=='')) rows.push(row);
-    }
-
+    if(cell!=='' || row.length){ row.push(cell); if(row.some(v=>String(v).trim()!=='')) rows.push(row); }
     if(rows.length<2) throw new Error('CSV kosong atau hanya berisi header.');
 
-    const headers=rows[0].map(h=>String(h).trim().toLowerCase());
-    const required=['date','platform','content','pillar','format','hook','cta','reach','views','likes','comments','shares','saves','profile visits','leads'];
-    const missing=required.filter(h=>!headers.includes(h));
-    if(missing.length){
-      throw new Error('Format CSV tidak sesuai. Kolom yang kurang: '+missing.join(', '));
-    }
+    const normalizeHeader=v=>String(v??'').replace(/^\uFEFF/,'').trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[._-]+/g,' ').replace(/\s+/g,' ');
+    const headers=rows[0].map(normalizeHeader);
 
+    const aliases={
+      date:['date','tanggal','tgl','content date','tanggal konten'],
+      platform:['platform','channel','media'],
+      content:['content','konten','content title','judul konten','title','judul'],
+      pillar:['pillar','pilar','content pillar','content pillars','content pilar','content category','kategori konten','kategori','tema konten'],
+      format:['format','content format','format konten','tipe konten','jenis konten','type'],
+      hook:['hook','content hook','hook type','jenis hook'],
+      cta:['cta','call to action','call-to-action','ajakan'],
+      reach:['reach','jangkauan'], views:['views','view','tayangan','penayangan'],
+      likes:['likes','like','suka'], comments:['comments','comment','komentar'],
+      shares:['shares','share','dibagikan','bagikan'], saves:['saves','save','disimpan','simpan'],
+      profile:['profile visits','profile visit','profile views','kunjungan profil','kunjungan profile'],
+      leads:['leads','lead','prospek']
+    };
     const idx={};
-    headers.forEach((h,i)=>idx[h]=i);
+    Object.keys(aliases).forEach(key=>{ idx[key]=headers.findIndex(h=>aliases[key].includes(h)); });
+    const required=['date','platform','content','pillar','format','hook','cta','reach','views','likes','comments','shares','saves','profile','leads'];
+    const missing=required.filter(key=>idx[key]===-1);
+    if(missing.length) throw new Error('Kolom CSV belum terbaca: '+missing.map(key=>aliases[key][0]).join(', ')+'. Gunakan template CSV GrowthScope atau nama kolom yang mirip.');
 
+    const valueAt=(r,key,fallback='')=>String(r[idx[key]]??fallback).trim();
     const num=v=>{
-      const n=Number(String(v??'').trim().replace(/,/g,''));
-      return Number.isFinite(n)?n:0;
+      const raw=String(v??'').trim().replace(/\s/g,''); if(!raw) return 0;
+      const normalized=raw.includes(',')&&raw.includes('.')
+        ? (raw.lastIndexOf(',')>raw.lastIndexOf('.') ? raw.replace(/\./g,'').replace(',','.') : raw.replace(/,/g,''))
+        : raw.replace(/,/g,'');
+      const n=Number(normalized); return Number.isFinite(n)?n:0;
+    };
+    const normalizeDate=v=>{
+      const s=String(v??'').trim(); if(!s) return '';
+      if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+      const m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+      return m ? m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0') : s;
     };
 
     const imported=[], skipped=[];
-
     for(let i=1;i<rows.length;i++){
-      const r=rows[i];
-      const title=String(r[idx.content]??'').trim();
-
-      if(!title){
-        skipped.push(`Baris ${i+1}: Content kosong`);
-        continue;
-      }
-
+      const r=rows[i], title=valueAt(r,'content');
+      if(!title){ skipped.push('Baris '+(i+1)+': Content kosong'); continue; }
       const x={
-        id:null,
-        date:String(r[idx.date]??'').trim(),
-        platform:String(r[idx.platform]??'Instagram').trim()||'Instagram',
-        title,
-        pillar:String(r[idx.pillar]??'').trim(),
-        format:String(r[idx.format]??'Reels').trim()||'Reels',
-        hook:String(r[idx.hook]??'Problem').trim()||'Problem',
-        cta:String(r[idx.cta]??'None').trim()||'None',
-        reach:num(r[idx.reach]),
-        views:num(r[idx.views]),
-        likes:num(r[idx.likes]),
-        comments:num(r[idx.comments]),
-        shares:num(r[idx.shares]),
-        saves:num(r[idx.saves]),
-        profile:num(r[idx['profile visits']]),
-        leads:num(r[idx.leads])
+        id:null, date:normalizeDate(valueAt(r,'date')), platform:valueAt(r,'platform','Instagram')||'Instagram',
+        title, pillar:valueAt(r,'pillar','General')||'General', format:valueAt(r,'format','Reels')||'Reels',
+        hook:valueAt(r,'hook','Problem')||'Problem', cta:valueAt(r,'cta','None')||'None',
+        reach:num(r[idx.reach]), views:num(r[idx.views]), likes:num(r[idx.likes]), comments:num(r[idx.comments]),
+        shares:num(r[idx.shares]), saves:num(r[idx.saves]), profile:num(r[idx.profile]), leads:num(r[idx.leads])
       };
-
-      if(x.date && !/^\d{4}-\d{2}-\d{2}$/.test(x.date)){
-        skipped.push(`Baris ${i+1}: Date harus YYYY-MM-DD`);
-        continue;
-      }
-
-      calc(x);
-      x.score=score(x,averages());
-      x.diagnosis=diagnosis(x,averages());
-      imported.push(contentToDb(x));
+      if(x.date && !/^\d{4}-\d{2}-\d{2}$/.test(x.date)){ skipped.push('Baris '+(i+1)+': Date tidak dikenali ("'+x.date+'"). Gunakan YYYY-MM-DD atau DD/MM/YYYY.'); continue; }
+      calc(x); x.score=score(x,averages()); x.diagnosis=diagnosis(x,averages()); imported.push(contentToDb(x));
     }
-
-    if(!imported.length){
-      throw new Error(skipped.join('\n')||'Tidak ada data yang bisa diimport.');
-    }
-
-    const {error}=await db.from('contents').insert(imported);
-    if(error) throw error;
-
-    await loadCloudData();
-    showPage('database');
-
-    let message=`Berhasil import ${imported.length} konten ke workspace "${workspace.name}".`;
-    if(skipped.length){
-      message+=`\n\n${skipped.length} baris dilewati:\n`+skipped.slice(0,10).join('\n');
-    }
+    if(!imported.length) throw new Error(skipped.join('\n')||'Tidak ada data yang bisa diimport.');
+    const {error}=await db.from('contents').insert(imported); if(error) throw error;
+    await loadCloudData(); showPage('database');
+    let message='Berhasil import '+imported.length+' konten ke workspace "'+workspace.name+'".';
+    if(skipped.length) message+='\n\n'+skipped.length+' baris dilewati:\n'+skipped.slice(0,10).join('\n');
     alert(message);
-
-  }catch(err){
-    console.error('CSV import error:',err);
-    alert('Import CSV gagal: '+(err.message||'Terjadi kesalahan.'));
-  }finally{
-    if(event?.target) event.target.value='';
-  }
+  }catch(err){ console.error('CSV import error:',err); alert('Import CSV gagal: '+(err.message||'Terjadi kesalahan.')); }
+  finally{ if(event?.target) event.target.value=''; }
 }
-
 // Matrix hook after every render
 const _oldRender=render;
 render=async function(){await _oldRender();renderGroupsMatrix(averages())};
