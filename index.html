@@ -772,7 +772,7 @@ body{background:var(--bg)}
 
 <section id="planner" class="page">
  <div class="card">
-  <div class="section-title"><div><h2>Content Planner</h2><div style="font-size:12px;color:#718096;margin-top:4px">Atur tanggal, jam, ide, format, hook, CTA, dan status konten.</div></div><button class="btn primary" onclick="openPlanModal()">+ Add Idea</button></div>
+  <div class="section-title planner-header"><div><h2>Content Planner</h2><div style="font-size:12px;color:#718096;margin-top:4px">Atur tanggal, jam, ide, format, hook, CTA, dan status konten.</div></div><div class="planner-actions"><button class="btn light" type="button" onclick="downloadPlannerCSVTemplate()">⇩ Download CSV Template</button><button class="btn light" type="button" onclick="document.getElementById('importCSVFile').click()">⇧ Import CSV</button><button class="btn primary" type="button" onclick="openPlanModal()">+ Add Idea</button></div></div>
   <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Topic</th><th>Pillar</th><th>Format</th><th>Hook</th><th>CTA</th><th>Status</th><th></th></tr></thead><tbody id="plannerTable"></tbody></table></div>
  </div>
 </section>
@@ -1673,7 +1673,21 @@ updateInstallButton();
 async function exportJSON(){const payload={version:'2.1-cloud',exportedAt:new Date().toISOString(),workspace,data,plans};downloadBlob(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),'smga-cloud-backup.json')}
 function downloadBlob(blob,filename){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},500)}
 async function exportCSV(){const headers=['Date','Platform','Content','Pillar','Format','Hook','CTA','Reach','Views','Likes','Comments','Shares','Saves','Profile Visits','Leads'];const rows=data.map(x=>[x.date,x.platform,x.title,x.pillar,x.format,x.hook,x.cta,x.reach,x.views,x.likes,x.comments,x.shares,x.saves,x.profile,x.leads]);const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');downloadBlob(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),'smga-content-data.csv')}
-function downloadCSVTemplate(){const headers=['Date','Platform','Content','Pillar','Format','Hook','CTA','Reach','Views','Likes','Comments','Shares','Saves','Profile Visits','Leads'];const example=['2026-09-30','Instagram','Contoh Konten','Education','Carousel','Problem','Save',1000,1500,80,5,20,30,40,3];const csv=[headers,example].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');downloadBlob(new Blob(['\ufeff'+csv],{type:'text/csv'}),'smga-import-template.csv')}
+function csvEscape(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
+function triggerCsvDownload(filename,headers,rows){
+  const csv=[headers,...rows].map(r=>r.map(csvEscape).join(',')).join('\n');
+  downloadBlob(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),filename);
+}
+function downloadCSVTemplate(){
+  const headers=['Date','Platform','Content','Pillar','Format','Hook','CTA','Reach','Views','Likes','Comments','Shares','Saves','Profile Visits','Leads'];
+  const example=['2026-10-05','Instagram','Contoh Konten','Education','Carousel','Problem','Save',1000,1500,80,5,20,30,40,3];
+  triggerCsvDownload('GrowthScope_Content_Template.csv',headers,[example]);
+}
+function downloadPlannerCSVTemplate(){
+  const headers=['Date','Time','Platform','Topic','Pillar','Format','Hook','CTA','Status','Notes'];
+  const example=['2026-10-05','10:00','Instagram','Contoh Topik','Education','Carousel','Problem','Save','Idea','Contoh catatan'];
+  triggerCsvDownload('GrowthScope_Planner_Template.csv',headers,[example]);
+}
 async function clearAllData(){
   if(!workspace || !currentUser){
     alert('Workspace belum siap. Silakan login kembali.');
@@ -1780,13 +1794,17 @@ async function importCSV(event){
     const headers=rows[0].map(normalizeHeader);
 
     const aliases={
-      date:['date','tanggal','tgl','content date','tanggal konten'],
-      platform:['platform','channel','media'],
-      content:['content','konten','content title','judul konten','title','judul'],
-      pillar:['pillar','pilar','content pillar','content pillars','content pilar','content category','kategori konten','kategori','tema konten'],
-      format:['format','content format','format konten','tipe konten','jenis konten','type'],
+      date:['date','tanggal','tgl','content date','tanggal konten','publish date','publish_date','planned date','planned_date'],
+      time:['time','jam','planned time','planned_time'],
+      platform:['platform','channel','media','social platform','social media'],
+      content:['content','konten','content title','judul konten','title','judul','content name','nama konten'],
+      topic:['topic','topik','content topic','content_topic'],
+      pillar:['pillar','pilar','content pillar','content pillars','content_pillar','content-pilar','content pilar','content category','content categories','kategori konten','kategori','tema konten','theme'],
+      format:['format','content format','format konten','content type','content_type','content_type','tipe konten','jenis konten','type','tipe'],
       hook:['hook','content hook','hook type','jenis hook'],
       cta:['cta','call to action','call-to-action','ajakan'],
+      status:['status','content status','planner status','state'],
+      notes:['notes','note','catatan','description','keterangan'],
       reach:['reach','jangkauan'], views:['views','view','tayangan','penayangan'],
       likes:['likes','like','suka'], comments:['comments','comment','komentar'],
       shares:['shares','share','dibagikan','bagikan'], saves:['saves','save','disimpan','simpan'],
@@ -1795,11 +1813,12 @@ async function importCSV(event){
     };
     const idx={};
     Object.keys(aliases).forEach(key=>{ idx[key]=headers.findIndex(h=>aliases[key].includes(h)); });
-    const required=['date','platform','content','pillar','format','hook','cta','reach','views','likes','comments','shares','saves','profile','leads'];
+    const required=['date','platform'];
     const missing=required.filter(key=>idx[key]===-1);
-    if(missing.length) throw new Error('Kolom CSV belum terbaca: '+missing.map(key=>aliases[key][0]).join(', ')+'. Gunakan template CSV GrowthScope atau nama kolom yang mirip.');
+    const hasTextField=idx.content!==-1||idx.topic!==-1;
+    if(!hasTextField) throw new Error('Kolom Content/Topic belum terbaca. Tambahkan salah satu kolom tersebut atau gunakan Template CSV GrowthScope.');
 
-    const valueAt=(r,key,fallback='')=>String(r[idx[key]]??fallback).trim();
+    const valueAt=(r,key,fallback='')=>idx[key]===-1?fallback:String(r[idx[key]]??fallback).trim();
     const num=v=>{
       const raw=String(v??'').trim().replace(/\s/g,''); if(!raw) return 0;
       const normalized=raw.includes(',')&&raw.includes('.')
@@ -1816,11 +1835,11 @@ async function importCSV(event){
 
     const imported=[], skipped=[];
     for(let i=1;i<rows.length;i++){
-      const r=rows[i], title=valueAt(r,'content');
+      const r=rows[i], title=valueAt(r,'content',valueAt(r,'topic',''));
       if(!title){ skipped.push('Baris '+(i+1)+': Content kosong'); continue; }
       const x={
         id:null, date:normalizeDate(valueAt(r,'date')), platform:valueAt(r,'platform','Instagram')||'Instagram',
-        title, pillar:valueAt(r,'pillar','General')||'General', format:valueAt(r,'format','Reels')||'Reels',
+        title, topic:valueAt(r,'topic',title)||title, pillar:valueAt(r,'pillar','General')||'General', format:valueAt(r,'format','Reels')||'Reels',
         hook:valueAt(r,'hook','Problem')||'Problem', cta:valueAt(r,'cta','None')||'None',
         reach:num(r[idx.reach]), views:num(r[idx.views]), likes:num(r[idx.likes]), comments:num(r[idx.comments]),
         shares:num(r[idx.shares]), saves:num(r[idx.saves]), profile:num(r[idx.profile]), leads:num(r[idx.leads])
