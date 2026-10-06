@@ -111,6 +111,12 @@
 @media(min-width:761px){.mobile-bottom-nav,.mobile-more-panel{display:none!important}}
 
 
+
+/* Global Modal Layer Fix */
+.modal{z-index:10000!important;isolation:isolate;background:rgba(8,13,27,.58);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.modal .modal-box{position:relative;z-index:10001;box-sizing:border-box;width:min(850px,calc(100vw - 40px));max-width:calc(100vw - 40px);max-height:90vh;overflow:auto;margin:0 auto;box-shadow:0 28px 80px rgba(15,23,42,.28)}
+.modal .modal-head{position:sticky;top:0;z-index:3;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);padding-bottom:14px}
+@media(max-width:760px){.modal{padding:10px}.modal .modal-box{width:calc(100vw - 20px);max-width:calc(100vw - 20px);max-height:94vh;border-radius:17px}.modal .form{grid-template-columns:1fr!important}.modal .form .field[style*="grid-column"]{grid-column:auto!important}}
 /* Planner Studio UI */
 #planModal{z-index:10050!important;background:rgba(7,12,24,.64);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
 #planModal .modal-box{position:relative;width:min(1040px,calc(100vw - 48px));max-height:92vh;padding:0;overflow:auto;border:1px solid rgba(255,255,255,.5);border-radius:24px;box-shadow:0 30px 90px rgba(7,12,24,.32)}
