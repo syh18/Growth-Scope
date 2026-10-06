@@ -110,6 +110,18 @@
 }
 @media(min-width:761px){.mobile-bottom-nav,.mobile-more-panel{display:none!important}}
 
+
+/* Planner Studio UI */
+#planModal{z-index:10050!important;background:rgba(7,12,24,.64);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+#planModal .modal-box{position:relative;width:min(1040px,calc(100vw - 48px));max-height:92vh;padding:0;overflow:auto;border:1px solid rgba(255,255,255,.5);border-radius:24px;box-shadow:0 30px 90px rgba(7,12,24,.32)}
+#planModal .modal-head{position:sticky;top:0;z-index:5;padding:20px 24px 18px;background:linear-gradient(135deg,#171f38 0%,#4038b8 55%,#756cff 100%);color:#fff;border-radius:24px 24px 0 0;align-items:flex-start}
+#planModal .modal-head:before{content:'CONTENT PLANNER • SCHEDULING STUDIO';display:block;position:absolute;left:24px;top:12px;font-size:8px;letter-spacing:1.7px;font-weight:900;color:#cfd4ff}
+#planModal .modal-head h2{margin:10px 0 0;font-size:22px;letter-spacing:-.4px}.plan-modal-close{background:rgba(255,255,255,.12)!important;border:1px solid rgba(255,255,255,.18)!important;color:#fff!important;border-radius:10px!important}
+#planModal #planForm{padding:20px 24px 24px}.plan-schedule-preview{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:10px;margin:0 0 18px;padding:14px;border:1px solid #e7e9ff;border-radius:17px;background:linear-gradient(135deg,#f8f7ff,#fff);box-shadow:0 8px 24px rgba(99,91,255,.06)}
+.plan-preview-main{grid-row:span 1;padding:12px 14px;border-radius:13px;background:#171f38;color:#fff}.plan-preview-kicker{font-size:8px;letter-spacing:1.4px;font-weight:900;color:#aeb8ff}.plan-preview-title{font-size:17px;font-weight:900;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.plan-preview-sub{font-size:10px;color:#c5cbe0;margin-top:3px}.plan-preview-stat{padding:10px 12px;border-radius:13px;background:#fff;border:1px solid #e8ebf2}.plan-preview-stat small{display:block;color:#98a2b3;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:1px}.plan-preview-stat b{display:block;font-size:16px;margin-top:5px;color:#172033}.plan-preview-stat span{display:block;font-size:9px;color:#7b8799;margin-top:2px}
+#planModal .form{grid-template-columns:repeat(3,1fr);gap:13px}.plan-section-field{background:#fafbff;border:1px solid #edf0f6;border-radius:13px;padding:11px}.plan-section-field label{font-weight:800!important;color:#475467!important}.plan-deadline-field{border:1px solid #dcd9ff!important;background:linear-gradient(135deg,#faf9ff,#f5f3ff)!important}.plan-deadline-field input,.plan-deadline-field select{background:#fff!important}.plan-links-field{background:#f8fafc;border:1px solid #edf0f5;border-radius:13px;padding:11px}.plan-content-field{border:1px solid #e8ebf2;border-radius:14px;padding:13px;background:#fff}.plan-content-field textarea{min-height:115px!important}
+#planModal .form-actions{position:sticky;bottom:0;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid #edf0f5;margin:20px -24px -24px;padding:14px 24px;z-index:4}.plan-save-btn{min-width:145px;box-shadow:0 9px 22px rgba(99,91,255,.24)}
+@media(max-width:760px){#planModal .modal-box{width:calc(100vw - 20px);max-height:94vh;border-radius:19px}#planModal .modal-head{border-radius:19px 19px 0 0;padding:18px 16px}#planModal .modal-head:before{left:16px}#planModal #planForm{padding:14px 16px 16px}#planModal .form{grid-template-columns:1fr!important}.plan-schedule-preview{grid-template-columns:1fr 1fr}.plan-preview-main{grid-column:1/-1}.plan-schedule-preview .plan-preview-stat:first-of-type{grid-column:1/-1}}
 /* Content Planner Deadline UI */
 .planner-deadline{display:flex;align-items:center;gap:7px;min-width:150px;padding:7px 9px;border:1px solid #e8ebf2;border-radius:11px;background:#fafbff}.planner-deadline-icon{font-size:14px}.planner-deadline-main{font-size:11px;font-weight:900;color:#172033}.planner-deadline-sub{font-size:9px;color:#8a95a8;margin-top:2px}.planner-deadline.soon{background:#fff8ed;border-color:#f8d8a6}.planner-deadline.soon .planner-deadline-main{color:#b45309}.planner-deadline.due{background:#fff1f2;border-color:#fecdd3}.planner-deadline.due .planner-deadline-main{color:#be123c}.planner-deadline.done{background:#f1f5f9;border-color:#e2e8f0}.planner-deadline.done .planner-deadline-main{color:#64748b}.planner-deadline.validating{background:#f0fdf4;border-color:#bbf7d0}.planner-deadline.validating .planner-deadline-main{color:#15803d}.deadline-overview{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:10px;margin:0 0 14px}.deadline-card{padding:13px 15px;border:1px solid #e8ebf2;border-radius:14px;background:linear-gradient(135deg,#fff,#fafaff);box-shadow:0 8px 24px rgba(23,32,51,.04)}.deadline-card .kicker{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#98a2b3;font-weight:900}.deadline-card .big{font-size:19px;font-weight:900;margin-top:4px}.deadline-card .small{font-size:10px;color:#7b8799;margin-top:3px}@media(max-width:950px){.deadline-overview{grid-template-columns:1fr 1fr}}@media(max-width:760px){.deadline-overview{grid-template-columns:1fr 1fr}.deadline-card:first-child{grid-column:1/-1}.planner-deadline{min-width:145px}}
 /* GrowthScope Modern UI Refresh */
@@ -1001,13 +1013,14 @@ input,select,textarea,button{max-width:100%}
 
 <div class="modal" id="planModal">
 <div class="modal-box">
- <div class="modal-head"><h2 id="planModalTitle">Add Planner Idea</h2><button class="btn light" onclick="closePlanModal()">✕</button></div>
+ <div class="modal-head"><div><h2 id="planModalTitle">Add Planner Idea</h2></div><button class="btn light plan-modal-close" onclick="closePlanModal()">✕</button></div>
  <form id="planForm" onsubmit="savePlan(event)">
   <input type="hidden" id="planEditId" value="">
+  <div id="planSchedulePreview" class="plan-schedule-preview"></div>
   <div class="form" style="margin-top:18px">
-   <div class="field"><label>Date</label><input type="date" id="planDate" required></div>
-   <div class="field"><label>Time</label><input type="time" id="planTime"></div>
-   <div class="field"><label>Platform</label><select id="planPlatform"><option>Instagram</option><option>TikTok</option><option>Facebook</option><option>LinkedIn</option><option>YouTube</option></select></div>
+   <div class="field plan-section-field"><label>📅 Upload Date</label><input type="date" id="planDate" required></div>
+   <div class="field plan-section-field"><label>⏰ Upload Time</label><input type="time" id="planTime"><small style="display:block;color:#98a2b3;margin-top:5px">Alarm mengikuti tanggal + jam ini.</small></div>
+   <div class="field plan-section-field"><label>📱 Platform</label><select id="planPlatform"><option>Instagram</option><option>TikTok</option><option>Facebook</option><option>LinkedIn</option><option>YouTube</option></select></div>
    <div class="field"><label>Topic</label><input id="planTopic" required placeholder="Contoh: Tips CV ATS"></div>
    <div class="field"><label>Pillar</label><input id="planPillar" placeholder="Contoh: Career"></div>
    <div class="field"><label>Format</label><select id="planFormat"><option>Carousel</option><option>Reels</option><option>Single Image</option><option>Story</option><option>Video</option></select></div>
@@ -1016,18 +1029,18 @@ input,select,textarea,button{max-width:100%}
    <div class="field"><label>Status</label><select id="planStatus"><option value="idea">Idea</option><option value="draft">Draft</option><option value="ready">Ready</option><option value="publish">Publish</option></select></div>
    <div class="field"><label>Instagram Feed Link <span style="font-weight:400;color:#98a2b3">(Opsional)</span></label><input id="planInstagramUrl" type="url" placeholder="https://www.instagram.com/p/..."></div>
    <div class="field"><label>Preview Konten <span style="font-weight:400;color:#98a2b3">(Opsional)</span></label><input id="planPreviewUrl" type="url" placeholder="Link Google Drive / Canva / preview"></div>
-   <div class="field" style="grid-column:1/-1"><label>Copywriting</label><textarea id="planCopywriting" rows="6" placeholder="Tulis caption / copywriting konten di sini..."></textarea></div>
-   <div class="field"><label>Waktu Validasi</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="planValidationValue" type="number" min="1" value="24"><select id="planValidationUnit"><option value="hours">Jam</option><option value="minutes">Menit</option><option value="days">Hari</option></select></div><small style="display:block;color:#98a2b3;margin-top:5px">Durasi pengumpulan data setelah konten di-upload.</small></div>
-   <div class="field"><label>Published At</label><input id="planPublishedAt" type="text" value="Otomatis saat Upload" readonly><small style="display:block;color:#98a2b3;margin-top:5px">Terisi otomatis ketika checkbox Upload dicentang.</small></div>
-   <div class="field"><label>Reminder Validasi</label><select id="planReminderBefore"><option value="1h">1 jam sebelum selesai</option><option value="30m">30 menit sebelum selesai</option><option value="15m">15 menit sebelum selesai</option><option value="none">Tidak ada reminder</option></select><small style="display:block;color:#98a2b3;margin-top:5px">Reminder muncul saat waktu validasi sudah mendekat.</small></div>
+   <div class="field plan-content-field" style="grid-column:1/-1"><label>✍️ Copywriting</label><textarea id="planCopywriting" rows="6" placeholder="Tulis caption / copywriting konten di sini..."></textarea></div>
+   <div class="field plan-section-field plan-deadline-field"><label>⏱ Waktu Validasi</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="planValidationValue" type="number" min="1" value="24"><select id="planValidationUnit"><option value="hours">Jam</option><option value="minutes">Menit</option><option value="days">Hari</option></select></div><small style="display:block;color:#98a2b3;margin-top:5px">Durasi pengumpulan data setelah konten di-upload.</small></div>
+   <div class="field plan-section-field"><label>🚀 Published At</label><input id="planPublishedAt" type="text" value="Otomatis saat Upload" readonly><small style="display:block;color:#98a2b3;margin-top:5px">Terisi otomatis ketika checkbox Upload dicentang.</small></div>
+   <div class="field plan-section-field"><label>🔔 Reminder Validasi</label><select id="planReminderBefore"><option value="1h">1 jam sebelum selesai</option><option value="30m">30 menit sebelum selesai</option><option value="15m">15 menit sebelum selesai</option><option value="none">Tidak ada reminder</option></select><small style="display:block;color:#98a2b3;margin-top:5px">Reminder muncul saat waktu validasi sudah mendekat.</small></div>
    <div class="field" id="planSlidesField" style="grid-column:1/-1;display:none">
     <label>Isi Slide <span style="font-weight:400;color:#98a2b3">(Carousel)</span></label>
     <div id="planSlidesList"></div>
     <button class="btn light" type="button" onclick="addPlanSlide()" style="margin-top:8px">＋ Tambah Slide</button>
    </div>
-   <div class="field" style="grid-column:1/-1"><label>Caption</label><textarea id="planNotes" rows="6" placeholder="Tulis caption untuk konten ini..."></textarea></div>
+   <div class="field plan-content-field" style="grid-column:1/-1"><label>💬 Caption</label><textarea id="planNotes" rows="6" placeholder="Tulis caption untuk konten ini..."></textarea></div>
   </div>
-  <div class="form-actions"><button type="button" class="btn light" onclick="closePlanModal()">Cancel</button><button class="btn primary">Save Planner</button></div>
+  <div class="form-actions"><button type="button" class="btn light" onclick="closePlanModal()">Cancel</button><button class="btn primary plan-save-btn">Save Planner</button></div>
  </form>
 </div>
 </div>
@@ -1749,6 +1762,16 @@ function renderRanking(){
     <td>${x.instagramUrl?`<a href="${esc(x.instagramUrl)}" target="_blank" rel="noopener" class="btn light" style="padding:6px 9px">↗ Open Feed</a>`:'<span class="mini-stat">—</span>'}</td>
   </tr>`).join('');
 }
+function updatePlanSchedulePreview(){
+  const box=document.getElementById('planSchedulePreview');if(!box)return;
+  const date=document.getElementById('planDate')?.value||'',time=document.getElementById('planTime')?.value||'';
+  const topic=document.getElementById('planTopic')?.value.trim()||'Konten baru';
+  const d=date?new Date(date+'T'+(time||'00:00')):null;
+  const valid=d&&!Number.isNaN(d.getTime());
+  const c=valid?countdownParts(d):{text:'Atur jadwal',state:'none'};
+  const when=valid?d.toLocaleString('id-ID',{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Tanggal & jam belum lengkap';
+  box.innerHTML='<div class="plan-preview-main"><div class="plan-preview-kicker">NEXT ACTION</div><div class="plan-preview-title">'+esc(topic)+'</div><div class="plan-preview-sub">🚀 '+esc(when)+'</div></div><div class="plan-preview-stat"><small>Countdown Upload</small><b>'+esc(c.text)+'</b><span>'+(valid?(c.state==='due'?'Waktunya upload!':'Menunggu jadwal upload'):'Isi jadwal dulu')+'</span></div><div class="plan-preview-stat"><small>Validation</small><b>'+esc(document.getElementById('planValidationValue')?.value||'24')+' '+esc(document.getElementById('planValidationUnit')?.selectedOptions?.[0]?.text||'Jam')+'</b><span>Mulai setelah upload</span></div>';
+}
 function openPlanModal(plan){
   document.getElementById('planForm').reset();
   document.getElementById('planEditId').value=plan?.id||'';
@@ -1774,8 +1797,11 @@ function openPlanModal(plan){
   updatePlanFormatFields();
   document.getElementById('planNotes').value=plan?.notes||'';
   document.getElementById('planModal').classList.add('open');
+  updatePlanSchedulePreview();
 }
 document.getElementById('planFormat')?.addEventListener('change',updatePlanFormatFields);
+['planDate','planTime','planTopic','planValidationValue','planValidationUnit'].forEach(id=>document.getElementById(id)?.addEventListener('input',updatePlanSchedulePreview));
+['planValidationUnit'].forEach(id=>document.getElementById(id)?.addEventListener('change',updatePlanSchedulePreview));
 function closePlanModal(){document.getElementById('planModal').classList.remove('open')}
 function isFeedSlideFormat(format){return String(format||'').toLowerCase()==='carousel'}
 function updatePlanFormatFields(){
