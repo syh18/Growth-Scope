@@ -630,7 +630,7 @@ body{background:var(--bg)}
   <nav class="nav">
     <button class="active" data-page="dashboard"><span class="nav-icon">⌂</span><span>Dashboard</span></button>
     <button data-page="database"><span class="nav-icon">▦</span><span>Content Database</span></button>
-    <button data-page="analytics"><span class="nav-icon">◫</span><span>Content Analytics</span></button>
+    <button data-page="analytics"><span class="nav-icon">◫</span><span>Content Analytics</span></button><button data-page="finalAnalysis"><span class="nav-icon">✓</span><span>Final Analysis</span></button>
     <button data-page="matrix"><span class="nav-icon">✦</span><span>Performance Matrix</span></button>
     <button data-page="recommendations"><span class="nav-icon">✧</span><span>Recommendations</span></button>
     <button data-page="planner"><span class="nav-icon">▣</span><span>Content Planner</span></button>
@@ -724,10 +724,11 @@ body{background:var(--bg)}
     <button class="btn light" type="button" onclick="resetDatabaseFilters()">Reset Filter</button>
    </div>
   </div>
-  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Content</th><th>Pillar</th><th>Format</th><th>Instagram Feed</th><th>Preview Konten</th><th>Reach</th><th>ER</th><th>Score</th><th>Diagnosis</th><th></th></tr></thead><tbody id="contentTable"></tbody></table></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Content</th><th>Pillar</th><th>Format</th><th>Instagram Feed</th><th>Preview Konten</th><th>Analysis</th><th>Reach</th><th>ER</th><th>Score</th><th>Diagnosis</th><th></th></tr></thead><tbody id="contentTable"></tbody></table></div>
  </div>
 </section>
 
+<section id="finalAnalysis" class="page"><div class="card"><div class="section-title"><div><h2>Final Analysis</h2><div class="mini-stat">Konten hanya masuk ke sini setelah melewati waktu validasi yang kamu tentukan.</div></div></div><div id="finalAnalysisSummary" class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:15px"></div><div class="table-wrap"><table class="table"><thead><tr><th>Content</th><th>Published</th><th>Validation</th><th>Reach</th><th>ER</th><th>Score</th><th>Matrix</th></tr></thead><tbody id="finalAnalysisTable"></tbody></table></div></div></section>
 <section id="analytics" class="page">
  <div class="grid">
   <div class="card"><div class="label">AVG LIKE RATE</div><div class="value" id="aLike">0%</div></div>
@@ -1455,7 +1456,7 @@ async function render(){
   data.forEach(calc); const a=averages(); data.forEach(x=>{x.score=score(x,a);x.diagnosis=diagnosis(x,a)});
   document.getElementById('mContent').textContent=data.length; document.getElementById('mReach').textContent=(data.reduce((s,x)=>s+n(x.reach),0)/1000).toFixed(1)+'K'; document.getElementById('mER').textContent=pct(a.er); document.getElementById('mScore').textContent=data.length?Math.round(avg(data.map(x=>x.score))):0;
   document.getElementById('aLike').textContent=pct(a.likeRate);document.getElementById('aComment').textContent=pct(a.commentRate);document.getElementById('aShare').textContent=pct(a.shareRate);document.getElementById('aSave').textContent=pct(a.saveRate);
-  renderTable(a);renderGroups();renderDashboard();renderRecs(a);renderPlanner();renderRanking();renderAIScore();renderSmartRecommendation();
+  renderTable(a);renderGroups();renderDashboard();renderRecs(a);renderPlanner();renderRanking();renderFinalAnalysis();renderAIScore();renderSmartRecommendation();
 }
 function renderTable(a){
   const tb=document.getElementById('contentTable');
@@ -1589,6 +1590,15 @@ function renderPlanner(){
 }
 function openLinkedContent(id){const x=data.find(v=>String(v.id)===String(id));if(!x){alert('Konten Database belum ditemukan.');return}showPage('database');setTimeout(()=>editContent(id),0)}
 function resetDatabaseFilters(){const m=document.getElementById('databaseMatrixFilter'),p=document.getElementById('databasePillarFilter');if(m)m.value='ALL';if(p)p.value='ALL';renderTable(averages())}
+function renderFinalAnalysis(){
+  const ready=data.filter(x=>getAnalysisState(x).status==='ready').sort((a,b)=>b.score-a.score);
+  const box=document.getElementById('finalAnalysisTable'),sum=document.getElementById('finalAnalysisSummary');
+  if(!box)return;
+  const collecting=data.filter(x=>getAnalysisState(x).status==='collecting').length;
+  if(sum)sum.innerHTML='<div class="card metric"><div class="label">FINALIZED</div><div class="value">'+ready.length+'</div><div class="up">Siap dianalisis</div></div><div class="card metric"><div class="label">COLLECTING</div><div class="value">'+collecting+'</div><div class="up">Masih menunggu validasi</div></div><div class="card metric"><div class="label">TOTAL CONTENT</div><div class="value">'+data.length+'</div><div class="up">Workspace aktif</div></div>';
+  if(!ready.length){box.innerHTML='<tr><td colspan="7" class="empty">Belum ada konten yang melewati waktu validasi.</td></tr>';return}
+  box.innerHTML=ready.map(x=>{const s=getAnalysisState(x);return '<tr><td><b>'+esc(x.title)+'</b><br><span class="mini-stat">'+esc(x.platform)+'</span></td><td>'+esc(x.publishedAt?new Date(x.publishedAt).toLocaleString('id-ID'):'-')+'</td><td>'+esc(minutesToValidation(x.validationMinutes).value)+' '+(minutesToValidation(x.validationMinutes).unit==='days'?'hari':minutesToValidation(x.validationMinutes).unit==='hours'?'jam':'menit')+'</td><td>'+n(x.reach).toLocaleString()+'</td><td>'+pct(x.er)+'</td><td><b>'+x.score+'</b></td><td><span class="pill '+(x.score>=75?'good':x.score>=50?'warn':'bad')+'">'+esc(diagnosis(x,averages()))+'</span></td></tr>'}).join('');
+}
 function renderRanking(){
   const tb=document.getElementById('rankingTable'),count=document.getElementById('rankingCount');
   const ranked=data.slice().sort((x,y)=>y.score-x.score||n(y.reach)-n(x.reach)||String(y.date||'').localeCompare(String(x.date||'')));
@@ -1840,7 +1850,7 @@ async function togglePlanUploaded(id,checked){
   }
 }
 async function deletePlan(id){if(!confirm('Hapus ide ini?'))return;const {error}=await db.from('content_plans').delete().eq('id',id).eq('workspace_id',workspace.id);if(error)alert(error.message);else await loadCloudData()}
-function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));const titles={dashboard:'Dashboard',database:'Content Database',analytics:'Content Analytics',matrix:'Performance Matrix',recommendations:'Recommendations',ai:'AI Studio',planner:'Content Planner',ranking:'Content Ranking',workspace:'Workspace'};document.getElementById('pageTitle').textContent=titles[id]||id;if(id==='ranking')renderRanking()}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));const titles={dashboard:'Dashboard',database:'Content Database',analytics:'Content Analytics',finalAnalysis:'Final Analysis',matrix:'Performance Matrix',recommendations:'Recommendations',ai:'AI Studio',planner:'Content Planner',ranking:'Content Ranking',workspace:'Workspace'};document.getElementById('pageTitle').textContent=titles[id]||id;if(id==='ranking')renderRanking();if(id==='finalAnalysis')renderFinalAnalysis()}
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function mobileNavigate(id){
   showPage(id);
