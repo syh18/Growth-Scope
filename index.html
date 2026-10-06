@@ -1460,11 +1460,11 @@ async function render(){
 }
 function renderTable(a){
   const tb=document.getElementById('contentTable');
-  if(!data.length){tb.innerHTML='<tr><td colspan="10" class="empty">Belum ada data. Klik “Add Content” untuk mulai.</td></tr>';return}
+  if(!data.length){tb.innerHTML='<tr><td colspan="12" class="empty">Belum ada data. Klik “Add Content” untuk mulai.</td></tr>';return}
   const matrixFilter=document.getElementById('databaseMatrixFilter')?.value||'ALL';
   const pillarFilter=document.getElementById('databasePillarFilter')?.value||'ALL';
   const filtered=data.filter(x=>(matrixFilter==='ALL'||diagnosis(x,a)===matrixFilter)&&(pillarFilter==='ALL'||x.pillar===pillarFilter));
-  if(!filtered.length){tb.innerHTML='<tr><td colspan="10" class="empty">Tidak ada konten yang sesuai filter.</td></tr>';return}
+  if(!filtered.length){tb.innerHTML='<tr><td colspan="12" class="empty">Tidak ada konten yang sesuai filter.</td></tr>';return}
   const ranked=filtered.slice().sort((x,y)=>String(y.date||'').localeCompare(String(x.date||'')));
   tb.innerHTML=ranked.map(x=>`<tr>
     <td>${esc(x.date)}</td>
@@ -1472,6 +1472,7 @@ function renderTable(a){
     <td>${esc(x.pillar)}</td><td>${esc(x.format)}</td>
     <td>${x.instagramUrl?`<a href="${esc(x.instagramUrl)}" target="_blank" rel="noopener" class="btn light" style="padding:6px 9px">↗ Open Feed</a>`:'<span class="mini-stat">Belum ada</span>'}</td>
     <td>${x.previewUrl?`<a href="${esc(x.previewUrl)}" target="_blank" rel="noopener" class="btn light" style="padding:6px 9px">↗ Preview</a>`:'<span class="mini-stat">Belum ada</span>'}</td>
+    <td>${analysisPill(x)}</td>
     <td>${n(x.reach).toLocaleString()}</td><td>${pct(x.er)}</td><td><b>${x.score}</b></td>
     <td><span class="pill ${x.score>=75?'good':x.score>=50?'warn':'bad'}">${diagnosis(x,a)}</span></td>
     <td style="display:flex;gap:5px"><button class="btn light" onclick="editContent('${x.id}')">Edit</button><button class="btn danger" onclick="deleteContent('${x.id}')">Delete</button></td>
@@ -1575,7 +1576,7 @@ async function aiCaption(){
 }
 function renderPlanner(){
   const tb=document.getElementById('plannerTable');
-  if(!plans.length){tb.innerHTML='<tr><td colspan="12" class="empty">Belum ada planner. Klik “+ Add Idea” untuk membuat jadwal.</td></tr>';return}
+  if(!plans.length){tb.innerHTML='<tr><td colspan="13" class="empty">Belum ada planner. Klik “+ Add Idea” untuk membuat jadwal.</td></tr>';return}
   tb.innerHTML=plans.map(x=>`<tr>
     <td><b>${esc(x.date||'-')}</b>${x.time?`<div style="font-size:11px;color:#718096">${esc(x.time)}</div>`:''}</td>
     <td><b>${esc(x.topic||x.title||'-')}</b><br><span style="font-size:11px;color:#718096">${esc(x.platform||'')}</span></td>
