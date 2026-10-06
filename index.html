@@ -2006,7 +2006,8 @@ async function togglePlanUploaded(id,checked){
   if(!plan)return;
   try{
     if(checked){
-      // Link Instagram bersifat opsional. Konten tetap bisa ditandai upload.\n      const linkedId=await createContentFromPlan(plan);
+      // Link Instagram bersifat opsional. Konten tetap bisa ditandai upload.
+      const linkedId=await createContentFromPlan(plan);
       plan.validationMinutes=Math.max(1,Number(plan.validationMinutes)||1440);
       const publishedAt=plan._meta?.publishedAt||new Date().toISOString();
       requestGrowthNotifications();
