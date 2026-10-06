@@ -633,6 +633,7 @@ body{background:var(--bg)}
     <button data-page="analytics"><span class="nav-icon">◫</span><span>Content Analytics</span></button>
     <button data-page="matrix"><span class="nav-icon">✦</span><span>Performance Matrix</span></button>
     <button data-page="recommendations"><span class="nav-icon">✧</span><span>Recommendations</span></button>
+    <button data-page="calendar"><span class="nav-icon">📅</span><span>Calendar</span></button>
     <button data-page="planner"><span class="nav-icon">▣</span><span>Content Planner</span></button>
     <button data-page="ranking"><span class="nav-icon">↕</span><span>Content Ranking</span></button>
     <button data-page="workspace"><span class="nav-icon">♙</span><span>Workspace</span></button>
@@ -812,6 +813,13 @@ body{background:var(--bg)}
  </div>
 </section>
 
+<section id="calendar" class="page">
+ <div class="card">
+  <div class="section-title"><div><h2>📅 Content Calendar</h2><div style="font-size:12px;color:#718096;margin-top:4px">Otomatis terhubung dengan Content Planner.</div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn light" onclick="calendarPrev()">‹</button><button class="btn light" onclick="calendarToday()">Today</button><button class="btn light" onclick="calendarNext()">›</button><button class="btn primary" onclick="addPlan()">＋ Add Content Plan</button></div></div>
+  <div id="calendarTitle" style="font-size:20px;font-weight:900;margin:12px 0"></div><div id="calendarStats" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"></div><div id="calendarGrid"></div>
+ </div>
+</section>
 <section id="planner" class="page">
  <div class="card">
   <div class="section-title planner-header"><div><h2>Content Planner</h2><div style="font-size:12px;color:#718096;margin-top:4px">Atur tanggal, jam, ide, format, hook, CTA, dan status konten.</div></div><div class="planner-actions"><button class="btn light" type="button" onclick="downloadPlannerCSVTemplate()">⇩ Download CSV Template</button><button class="btn light" type="button" onclick="document.getElementById('importCSVFile').click()">⇧ Import CSV</button><button class="btn primary" type="button" onclick="openPlanModal()">+ Add Idea</button></div></div>
@@ -1876,7 +1884,24 @@ async function togglePlanUploaded(id,checked){
   }
 }
 async function deletePlan(id){if(!confirm('Hapus ide ini?'))return;const {error}=await db.from('content_plans').delete().eq('id',id).eq('workspace_id',workspace.id);if(error)alert(error.message);else await loadCloudData()}
-function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));const titles={dashboard:'Dashboard',database:'Content Database',analytics:'Content Analytics',matrix:'Performance Matrix',recommendations:'Recommendations',ai:'AI Studio',planner:'Content Planner',ranking:'Content Ranking',workspace:'Workspace'};document.getElementById('pageTitle').textContent=titles[id]||id;if(id==='ranking')renderRanking()}
+let calendarCursor=new Date();
+function calendarPrev(){calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()-1,1);renderCalendar()}
+function calendarNext(){calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()+1,1);renderCalendar()}
+function calendarToday(){calendarCursor=new Date();renderCalendar()}
+function calendarFormatDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function renderCalendar(){
+ const grid=document.getElementById('calendarGrid');if(!grid)return;
+ const y=calendarCursor.getFullYear(),m=calendarCursor.getMonth(),first=new Date(y,m,1),last=new Date(y,m+1,0),start=(first.getDay()+6)%7;
+ document.getElementById('calendarTitle').textContent=calendarCursor.toLocaleDateString('id-ID',{month:'long',year:'numeric'});
+ const monthPlans=plans.filter(p=>{const d=new Date((p.date||'')+'T00:00:00');return p.date&&d.getFullYear()===y&&d.getMonth()===m});
+ const counts={idea:0,draft:0,ready:0,published:0};monthPlans.forEach(p=>{if(p.uploaded)counts.published++;else if(counts[p.status]!=null)counts[p.status]++});
+ document.getElementById('calendarStats').innerHTML='<span class="pill">'+monthPlans.length+' Content Planned</span><span class="pill good">✓ '+counts.published+' Published</span><span class="pill warn">● '+counts.ready+' Ready</span><span class="pill">● '+counts.draft+' Draft</span><span class="pill">● '+counts.idea+' Idea</span>';
+ const days=['Sen','Sel','Rab','Kam','Jum','Sab','Min'];let h='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">';days.forEach(d=>h+='<div style="padding:8px;text-align:center;font-size:10px;font-weight:900;color:#7b8799">'+d+'</div>');
+ for(let i=0;i<start;i++)h+='<div style="min-height:125px;background:#fafbfe;border:1px solid #edf0f5;border-radius:10px"></div>';
+ for(let day=1;day<=last.getDate();day++){const d=new Date(y,m,day),key=calendarFormatDate(d),today=calendarFormatDate(new Date())===key,items=plans.filter(p=>p.date===key).sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));h+='<div style="min-height:125px;background:#fff;border:1px solid '+(today?'#635bff':'#e8ebf2')+';border-radius:10px;padding:7px;overflow:hidden"><div style="font-size:11px;font-weight:900;color:'+(today?'#635bff':'#172033')+'">'+day+(today?' · Today':'')+'</div>'+items.map(p=>'<button type="button" onclick="editPlan(\''+String(p.id).replace(/'/g,"\\'")+'\')" style="display:block;width:100%;text-align:left;border:0;border-left:3px solid #635bff;background:#f8fafc;border-radius:7px;padding:7px;margin-top:5px;cursor:pointer"><b style="display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.topic||p.title||'Untitled')+'</b><span style="font-size:9px;color:#7b8799">'+esc(p.time||'')+' · '+esc(p.format||'')+'</span></button>').join('')+'</div>'}
+ h+='</div>';grid.innerHTML=h;
+}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));const titles={dashboard:'Dashboard',database:'Content Database',analytics:'Content Analytics',matrix:'Performance Matrix',recommendations:'Recommendations',ai:'AI Studio',planner:'Content Planner',calendar:'Content Calendar',ranking:'Content Ranking',workspace:'Workspace'};document.getElementById('pageTitle').textContent=titles[id]||id;if(id==='ranking')renderRanking();if(id==='calendar')renderCalendar()}
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function mobileNavigate(id){
   showPage(id);
