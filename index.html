@@ -881,7 +881,7 @@ input,select,textarea,button{max-width:100%}
 <section id="planner" class="page">
  <div class="card">
   <div class="section-title planner-header"><div><h2>Content Planner</h2><div style="font-size:12px;color:#718096;margin-top:4px">Atur tanggal, jam, ide, format, hook, CTA, dan status konten.</div></div><div class="planner-actions"><button class="btn light" type="button" onclick="downloadPlannerCSVTemplate()">⇩ Download CSV Template</button><button class="btn light" type="button" onclick="document.getElementById('importCSVFile').click()">⇧ Import CSV</button><button class="btn primary" type="button" onclick="openPlanModal()">+ Add Idea</button></div></div>
-  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Topic</th><th>Pillar</th><th>Format</th><th>Hook</th><th>CTA</th><th>Instagram Feed</th><th>Preview Konten</th><th>Content Database</th><th>Upload</th><th>Status</th><th></th></tr></thead><tbody id="plannerTable"></tbody></table></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Topic</th><th>Pillar</th><th>Format</th><th>Hook</th><th>CTA</th><th>Instagram Feed</th><th>Preview Konten</th><th>Content Database</th><th>Upload</th><th>Status</th><th>Deadline Validasi</th><th></th></tr></thead><tbody id="plannerTable"></tbody></table></div>
  </div>
 </section>
 
@@ -1664,9 +1664,29 @@ async function aiCaption(){
     box.innerHTML=`<h3>${esc(topic)}</h3><div id="generatedCaptionText" style="white-space:pre-wrap">${esc(full)}</div><div class="ai-actions"><button class="btn light" onclick="navigator.clipboard?.writeText(document.getElementById('generatedCaptionText').innerText)">Copy Caption</button></div>`;
   }catch(err){box.innerHTML=`<div class="notice" style="color:#991b1b">AI belum bisa digunakan: ${esc(err.message)}</div>`;}
 }
+function validationCountdownText(item){
+  const ready=validationReadyAt(item);
+  if(!ready)return 'Belum upload';
+  const diff=ready.getTime()-Date.now();
+  if(diff<=0)return '⏰ Selesai';
+  const total=Math.floor(diff/1000),d=Math.floor(total/86400),h=Math.floor((total%86400)/3600),m=Math.floor((total%3600)/60),sec=total%60;
+  if(d>0)return d+'h '+h+'j '+m+'m';
+  if(h>0)return h+'j '+m+'m '+sec+'d';
+  return m+'m '+sec+'d';
+}
+function updateValidationCountdowns(){
+  document.querySelectorAll('[data-validation-countdown]').forEach(el=>{
+    const id=el.getAttribute('data-validation-countdown');
+    const item=plans.find(p=>String(p.id)===String(id));
+    if(!item)return;
+    const ready=validationReadyAt(item);
+    el.textContent=validationCountdownText(item);
+    el.style.color=ready&&ready.getTime()<=Date.now()?'#dc2626':(ready&&ready.getTime()-Date.now()<3600000?'#d97706':'#16a34a');
+  });
+}
 function renderPlanner(){
   const tb=document.getElementById('plannerTable');
-  if(!plans.length){tb.innerHTML='<tr><td colspan="12" class="empty">Belum ada planner. Klik “+ Add Idea” untuk membuat jadwal.</td></tr>';return}
+  if(!plans.length){tb.innerHTML='<tr><td colspan="13" class="empty">Belum ada planner. Klik “+ Add Idea” untuk membuat jadwal.</td></tr>';return}
   tb.innerHTML=plans.map(x=>`<tr>
     <td><b>${esc(x.date||'-')}</b>${x.time?`<div style="font-size:11px;color:#718096">${esc(x.time)}</div>`:''}</td>
     <td><b>${esc(x.topic||x.title||'-')}</b><br><span style="font-size:11px;color:#718096">${esc(x.platform||'')}</span></td>
@@ -1676,8 +1696,10 @@ function renderPlanner(){
     <td>${x.linkedContentId?`<button class="btn light" type="button" style="padding:6px 9px" onclick="openLinkedContent('${x.linkedContentId}')">↗ Lihat Konten</button>`:'<span class="mini-stat">Belum terhubung</span>'}</td>
     <td><input type="checkbox" ${x.uploaded?'checked':''} onchange="togglePlanUploaded('${x.id}',this.checked)" aria-label="Tandai sudah upload"></td>
     <td><span class="pill ${x.uploaded?'good':'warn'}">${x.uploaded?'Uploaded':'Belum Upload'} · ${esc(x.status)}</span></td>
+    <td><b data-validation-countdown="${x.id}" style="font-size:11px;color:#7b8799;white-space:nowrap">${validationCountdownText(x)}</b></td>
     <td style="display:flex;gap:5px"><button class="btn light" onclick="editPlan('${x.id}')">Edit</button><button class="btn danger" onclick="deletePlan('${x.id}')">Delete</button></td>
   </tr>`).join('');
+  updateValidationCountdowns();
 }
 function openLinkedContent(id){const x=data.find(v=>String(v.id)===String(id));if(!x){alert('Konten Database belum ditemukan.');return}showPage('database');setTimeout(()=>editContent(id),0)}
 function resetDatabaseFilters(){const m=document.getElementById('databaseMatrixFilter'),p=document.getElementById('databasePillarFilter');if(m)m.value='ALL';if(p)p.value='ALL';renderTable(averages())}
@@ -2199,6 +2221,7 @@ render=async function(){await _oldRender();renderGroupsMatrix(averages());render
 
 init();
 setInterval(checkValidationReminders,30000);
+setInterval(updateValidationCountdowns,1000);
 setTimeout(checkValidationReminders,3000);
 </script>
 </body>
