@@ -544,6 +544,11 @@ body{background:var(--bg)}
   }
   .main{padding-bottom:92px!important}
 }
+<style>
+.ranking-highlight{font-weight:900}
+.planner-upload-check{width:18px;height:18px;accent-color:#635bff}
+.table a{color:#5148e8;text-decoration:none}
+.table a:hover{text-decoration:underline}
 </style></head>
 <body>
 <div id="authScreen">
@@ -611,6 +616,7 @@ body{background:var(--bg)}
     <button data-page="matrix"><span class="nav-icon">✦</span><span>Performance Matrix</span></button>
     <button data-page="recommendations"><span class="nav-icon">✧</span><span>Recommendations</span></button>
     <button data-page="planner"><span class="nav-icon">▣</span><span>Content Planner</span></button>
+    <button data-page="ranking"><span class="nav-icon">↕</span><span>Content Ranking</span></button>
     <button data-page="workspace"><span class="nav-icon">♙</span><span>Workspace</span></button>
   </nav>
 
@@ -693,7 +699,7 @@ body{background:var(--bg)}
 <section id="database" class="page">
  <div class="card">
   <div class="section-title database-header"><div><h2>Content Database</h2><div style="font-size:12px;color:#718096;margin-top:4px">Import data CSV dengan auto-detection kolom.</div></div><div class="database-actions"><button class="btn light" type="button" onclick="downloadCSVTemplate()">⇩ CSV Template</button><button class="btn light" type="button" onclick="document.getElementById('importCSVFile').click()">⇧ Import CSV</button><button class="btn primary" type="button" onclick="openModal()">+ Add Content</button></div></div>
-  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Content</th><th>Pillar</th><th>Format</th><th>Reach</th><th>ER</th><th>Score</th><th>Diagnosis</th><th></th></tr></thead><tbody id="contentTable"></tbody></table></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Rank</th><th>Date</th><th>Content</th><th>Pillar</th><th>Format</th><th>Instagram Feed</th><th>Reach</th><th>ER</th><th>Score</th><th>Diagnosis</th><th></th></tr></thead><tbody id="contentTable"></tbody></table></div>
  </div>
 </section>
 
@@ -784,7 +790,20 @@ body{background:var(--bg)}
 <section id="planner" class="page">
  <div class="card">
   <div class="section-title planner-header"><div><h2>Content Planner</h2><div style="font-size:12px;color:#718096;margin-top:4px">Atur tanggal, jam, ide, format, hook, CTA, dan status konten.</div></div><div class="planner-actions"><button class="btn light" type="button" onclick="downloadPlannerCSVTemplate()">⇩ Download CSV Template</button><button class="btn light" type="button" onclick="document.getElementById('importCSVFile').click()">⇧ Import CSV</button><button class="btn primary" type="button" onclick="openPlanModal()">+ Add Idea</button></div></div>
-  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Topic</th><th>Pillar</th><th>Format</th><th>Hook</th><th>CTA</th><th>Status</th><th></th></tr></thead><tbody id="plannerTable"></tbody></table></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Topic</th><th>Pillar</th><th>Format</th><th>Hook</th><th>CTA</th><th>Instagram Feed</th><th>Upload</th><th>Status</th><th></th></tr></thead><tbody id="plannerTable"></tbody></table></div>
+ </div>
+</section>
+
+<section id="ranking" class="page">
+ <div class="card">
+  <div class="section-title"><div><h2>Content Ranking</h2><div style="font-size:12px;color:#718096;margin-top:4px">Urut otomatis dari konten dengan performa terbaik sampai terendah berdasarkan Score.</div></div><span class="pill good" id="rankingCount">0 konten</span></div>
+  <div class="notice" style="margin-bottom:12px"><b>Scoring:</b> Ranking memakai formula Score GrowthScope yang sama dengan Dashboard & Performance Matrix. Semakin tinggi score, semakin tinggi posisi konten.</div>
+  <div class="table-wrap">
+   <table class="table">
+    <thead><tr><th>Rank</th><th>Content</th><th>Date</th><th>Platform</th><th>Pillar</th><th>Format</th><th>Reach</th><th>ER</th><th>Score</th><th>Diagnosis</th><th>Instagram Feed</th></tr></thead>
+    <tbody id="rankingTable"></tbody>
+   </table>
+  </div>
  </div>
 </section>
 
@@ -873,6 +892,7 @@ body{background:var(--bg)}
   <button onclick="openWorkspaceModal();toggleMobileMore()">＋ Tambah Workspace</button>
   <button onclick="mobileNavigate('matrix')">✦ Performance Matrix</button>
   <button onclick="mobileNavigate('recommendations')">◎ Recommendations</button>
+  <button onclick="mobileNavigate('ranking')">↕ Content Ranking</button>
   <button onclick="mobileNavigate('workspace')">⚙ Workspace Settings</button>
   <button onclick="exportJSON();toggleMobileMore()">⇩ Export JSON</button>
   <button onclick="document.getElementById('importFile').click();toggleMobileMore()">⇧ Import Backup</button>
@@ -901,6 +921,7 @@ body{background:var(--bg)}
    <div class="field"><label>Hook</label><select id="planHook"><option>Problem</option><option>Question</option><option>Curiosity</option><option>Statistic</option><option>Story</option></select></div>
    <div class="field"><label>CTA</label><input id="planCTA" value="Save"></div>
    <div class="field"><label>Status</label><select id="planStatus"><option value="idea">Idea</option><option value="draft">Draft</option><option value="ready">Ready</option><option value="publish">Publish</option></select></div>
+   <div class="field"><label>Instagram Feed Link</label><input id="planInstagramUrl" type="url" placeholder="https://www.instagram.com/p/..."></div>
    <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea id="planNotes" placeholder="Catatan tambahan..."></textarea></div>
   </div>
   <div class="form-actions"><button type="button" class="btn light" onclick="closePlanModal()">Cancel</button><button class="btn primary">Save Planner</button></div>
@@ -929,6 +950,7 @@ body{background:var(--bg)}
    <div class="field"><label>Saves</label><input type="number" id="fSaves" min="0" value="0"></div>
    <div class="field"><label>Profile Visits</label><input type="number" id="fProfile" min="0" value="0"></div>
    <div class="field"><label>Leads / Conversion</label><input type="number" id="fLeads" min="0" value="0"></div>
+   <div class="field full"><label>Instagram Feed Link</label><input type="url" id="fInstagramUrl" placeholder="https://www.instagram.com/p/..."></div>
   </div>
   <div class="form-actions"><button type="button" class="btn light" onclick="closeModal()">Cancel</button><button class="btn primary">Save Content</button></div>
  </form>
@@ -970,9 +992,9 @@ function score(x,a){
   return Math.max(0,Math.min(100,Math.round(reach*.30+eng*.35+share*.15+save*.20)));
 }
 function diagnosis(x,a){const hr=x.reach>=a.reach,he=x.er>=a.er;return hr&&he?'SCALE':!hr&&he?'HIDDEN GEM':hr&&!he?'OPTIMIZE':'REWORK'}
-function dbToContent(r){return calc({id:r.id,date:r.content_date||'',platform:r.platform||'Instagram',title:r.title||'',pillar:r.pillar||'',topic:r.topic||'',format:r.format||'Reels',hook:r.hook||'Problem',cta:r.cta||'None',reach:n(r.reach),impressions:n(r.impressions),views:n(r.views),likes:n(r.likes),comments:n(r.comments),shares:n(r.shares),saves:n(r.saves),profile:n(r.profile_visits),linkClicks:n(r.link_clicks),leads:n(r.leads),notes:r.notes||''})}
-function contentToDb(x){return {workspace_id:workspace.id,created_by:currentUser.id,content_date:x.date||null,platform:x.platform,title:x.title,pillar:x.pillar,topic:x.topic||null,format:x.format,hook:x.hook,cta:x.cta,reach:n(x.reach),impressions:n(x.impressions),views:n(x.views),likes:n(x.likes),comments:n(x.comments),shares:n(x.shares),saves:n(x.saves),profile_visits:n(x.profile),link_clicks:n(x.linkClicks),leads:n(x.leads),engagement_rate:n(x.er),like_rate:n(x.likeRate),comment_rate:n(x.commentRate),share_rate:n(x.shareRate),save_rate:n(x.saveRate),content_score:n(x.score),diagnosis:x.diagnosis||null,notes:x.notes||null}}
-function dbToPlan(r){return {id:r.id,date:r.planned_date||'',time:r.planned_time||'',platform:r.platform||'Instagram',title:r.title||'',topic:r.topic||'',pillar:r.pillar||'General',format:r.format||'Carousel',hook:r.hook||'Problem',cta:r.cta||'Save',status:r.status||'idea',notes:r.notes||''}}
+function dbToContent(r){return calc({id:r.id,date:r.content_date||'',platform:r.platform||'Instagram',title:r.title||'',pillar:r.pillar||'',topic:r.topic||'',format:r.format||'Reels',hook:r.hook||'Problem',cta:r.cta||'None',reach:n(r.reach),impressions:n(r.impressions),views:n(r.views),likes:n(r.likes),comments:n(r.comments),shares:n(r.shares),saves:n(r.saves),profile:n(r.profile_visits),linkClicks:n(r.link_clicks),leads:n(r.leads),notes:r.notes||'',instagramUrl:r.instagram_url||'',sourcePlanId:r.source_plan_id||null,uploaded:r.uploaded??true})}
+function contentToDb(x){return {workspace_id:workspace.id,created_by:currentUser.id,content_date:x.date||null,platform:x.platform,title:x.title,pillar:x.pillar,topic:x.topic||null,format:x.format,hook:x.hook,cta:x.cta,reach:n(x.reach),impressions:n(x.impressions),views:n(x.views),likes:n(x.likes),comments:n(x.comments),shares:n(x.shares),saves:n(x.saves),profile_visits:n(x.profile),link_clicks:n(x.linkClicks),leads:n(x.leads),engagement_rate:n(x.er),like_rate:n(x.likeRate),comment_rate:n(x.commentRate),share_rate:n(x.shareRate),save_rate:n(x.saveRate),content_score:n(x.score),diagnosis:x.diagnosis||null,notes:x.notes||null,instagram_url:x.instagramUrl||null,source_plan_id:x.sourcePlanId||null,uploaded:x.uploaded!==false}}
+function dbToPlan(r){return {id:r.id,date:r.planned_date||'',time:r.planned_time||'',platform:r.platform||'Instagram',title:r.title||'',topic:r.topic||'',pillar:r.pillar||'General',format:r.format||'Carousel',hook:r.hook||'Problem',cta:r.cta||'Save',status:r.status||'idea',notes:r.notes||'',instagramUrl:r.instagram_url||'',uploaded:!!r.uploaded,linkedContentId:r.linked_content_id||null}}
 function showMsg(id,text,type='error'){const el=document.getElementById(id);el.textContent=text;el.className='auth-msg show '+type}
 function showLogin(){document.getElementById('loginPanel').style.display='block';document.getElementById('registerPanel').style.display='none';document.getElementById('loginMsg').className='auth-msg';document.getElementById('registerMsg').className='auth-msg'}
 function showRegister(){document.getElementById('loginPanel').style.display='none';document.getElementById('registerPanel').style.display='block';document.getElementById('loginMsg').className='auth-msg';document.getElementById('registerMsg').className='auth-msg'}
@@ -1373,13 +1395,26 @@ async function render(){
   data.forEach(calc); const a=averages(); data.forEach(x=>{x.score=score(x,a);x.diagnosis=diagnosis(x,a)});
   document.getElementById('mContent').textContent=data.length; document.getElementById('mReach').textContent=(data.reduce((s,x)=>s+n(x.reach),0)/1000).toFixed(1)+'K'; document.getElementById('mER').textContent=pct(a.er); document.getElementById('mScore').textContent=data.length?Math.round(avg(data.map(x=>x.score))):0;
   document.getElementById('aLike').textContent=pct(a.likeRate);document.getElementById('aComment').textContent=pct(a.commentRate);document.getElementById('aShare').textContent=pct(a.shareRate);document.getElementById('aSave').textContent=pct(a.saveRate);
-  renderTable(a);renderGroups();renderDashboard();renderRecs(a);renderPlanner();renderAIScore();renderSmartRecommendation();
+  renderTable(a);renderGroups();renderDashboard();renderRecs(a);renderPlanner();renderRanking();renderAIScore();renderSmartRecommendation();
 }
-function renderTable(a){const tb=document.getElementById('contentTable');if(!data.length){tb.innerHTML='<tr><td colspan="9" class="empty">Belum ada data. Klik “Add Content” untuk mulai.</td></tr>';return}tb.innerHTML=data.map(x=>`<tr><td>${esc(x.date)}</td><td><b>${esc(x.title)}</b><br><span style="color:#718096">${esc(x.platform)}</span></td><td>${esc(x.pillar)}</td><td>${esc(x.format)}</td><td>${n(x.reach).toLocaleString()}</td><td>${pct(x.er)}</td><td><b>${x.score}</b></td><td><span class="pill ${x.score>=75?'good':x.score>=50?'warn':'bad'}">${diagnosis(x,a)}</span></td><td style="display:flex;gap:5px"><button class="btn light" onclick="editContent('${x.id}')">Edit</button><button class="btn danger" onclick="deleteContent('${x.id}')">Delete</button></td></tr>`).join('')}
+function renderTable(a){
+  const tb=document.getElementById('contentTable');
+  if(!data.length){tb.innerHTML='<tr><td colspan="11" class="empty">Belum ada data. Klik “Add Content” untuk mulai.</td></tr>';return}
+  const ranked=data.slice().sort((x,y)=>y.score-x.score||String(y.date||'').localeCompare(String(x.date||'')));
+  tb.innerHTML=ranked.map((x,i)=>`<tr>
+    <td><b>#${i+1}</b></td><td>${esc(x.date)}</td>
+    <td><b>${esc(x.title)}</b><br><span style="color:#718096">${esc(x.platform)}</span></td>
+    <td>${esc(x.pillar)}</td><td>${esc(x.format)}</td>
+    <td>${x.instagramUrl?`<a href="${esc(x.instagramUrl)}" target="_blank" rel="noopener" class="btn light" style="padding:6px 9px">↗ Open Feed</a>`:'<span class="mini-stat">Belum ada</span>'}</td>
+    <td>${n(x.reach).toLocaleString()}</td><td>${pct(x.er)}</td><td><b>${x.score}</b></td>
+    <td><span class="pill ${x.score>=75?'good':x.score>=50?'warn':'bad'}">${diagnosis(x,a)}</span></td>
+    <td style="display:flex;gap:5px"><button class="btn light" onclick="editContent('${x.id}')">Edit</button><button class="btn danger" onclick="deleteContent('${x.id}')">Delete</button></td>
+  </tr>`).join('');
+}
 function groupStats(key){const map={};data.forEach(x=>{const k=x[key]||'Unknown';(map[k]??=[]).push(x)});return Object.entries(map).sort((A,B)=>avg(B[1].map(x=>x.er))-avg(A[1].map(x=>x.er))).map(([k,v])=>`<tr><td><b>${esc(k)}</b></td><td>${v.length}</td><td>${Math.round(avg(v.map(x=>x.reach))).toLocaleString()}</td><td>${pct(avg(v.map(x=>x.er)))}</td><td>${pct(avg(v.map(x=>x.shareRate)))}</td><td>${pct(avg(v.map(x=>x.saveRate)))}</td></tr>`).join('')}
 function renderGroups(){const h='<table class="table"><thead><tr><th>Category</th><th>Posts</th><th>Avg Reach</th><th>Avg ER</th><th>Share</th><th>Save</th></tr></thead><tbody>';document.getElementById('pillarTable').innerHTML=data.length?h+groupStats('pillar')+'</tbody></table>':'<div class="empty">No data</div>';document.getElementById('formatTable').innerHTML=data.length?h+groupStats('format')+'</tbody></table>':'<div class="empty">No data</div>'}
 function best(key){if(!data.length)return'No data';const map={};data.forEach(x=>(map[x[key]||'Unknown']??=[]).push(x.er));return Object.entries(map).sort((a,b)=>avg(b[1])-avg(a[1]))[0]?.[0]||'No data'}
-function renderDashboard(){document.getElementById('bestPillar').innerHTML=data.length?'<b>'+esc(best('pillar'))+'</b>':'No data';document.getElementById('bestFormat').innerHTML=data.length?'<b>'+esc(best('format'))+'</b>':'No data';document.getElementById('bestHook').innerHTML=data.length?'<b>'+esc(best('hook'))+'</b>':'No data';const top=data.slice().sort((a,b)=>b.score-a.score).slice(0,5);document.getElementById('topContent').innerHTML=top.length?top.map(x=>`<div style="padding:10px 0;border-bottom:1px solid #e7ebf2"><b>${esc(x.title)}</b><div style="font-size:12px;color:#718096">${esc(x.format)} · Score ${x.score} · ER ${pct(x.er)}</div></div>`).join(''):'<div class="empty">No data</div>';drawChart()}
+function renderDashboard(){document.getElementById('bestPillar').innerHTML=data.length?'<b>'+esc(best('pillar'))+'</b>':'No data';document.getElementById('bestFormat').innerHTML=data.length?'<b>'+esc(best('format'))+'</b>':'No data';document.getElementById('bestHook').innerHTML=data.length?'<b>'+esc(best('hook'))+'</b>':'No data';const top=data.slice().sort((a,b)=>b.score-a.score).slice(0,5);document.getElementById('topContent').innerHTML=top.length?top.map((x,i)=>`<div style="padding:10px 0;border-bottom:1px solid #e7ebf2"><b>#${i+1} · ${esc(x.title)}</b><div style="font-size:12px;color:#718096">${esc(x.format)} · Score ${x.score} · ER ${pct(x.er)} ${x.instagramUrl?'· <a href="'+esc(x.instagramUrl)+'" target="_blank" rel="noopener">Instagram</a>':''}</div></div>`).join(''):'<div class="empty">No data</div>';drawChart()}
 function drawChart(){const c=document.getElementById('chart');if(!c)return;const ctx=c.getContext('2d');const d=data.slice().reverse().slice(-12);ctx.clearRect(0,0,c.width,c.height);if(!d.length){ctx.font='14px system-ui';ctx.fillStyle='#718096';ctx.fillText('Tambahkan konten untuk melihat grafik.',20,40);return}const w=c.width,h=c.height,p=25,max=Math.max(...d.map(x=>x.reach),1);ctx.strokeStyle='#e7ebf2';ctx.beginPath();ctx.moveTo(p,10);ctx.lineTo(p,h-25);ctx.lineTo(w-10,h-25);ctx.stroke();const step=(w-p-20)/Math.max(d.length-1,1);ctx.strokeStyle='#635bff';ctx.lineWidth=3;ctx.beginPath();d.forEach((x,i)=>{const X=p+i*step,Y=(h-25)-(x.reach/max)*(h-45);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)});ctx.stroke();d.forEach((x,i)=>{const X=p+i*step,Y=(h-25)-(x.reach/max)*(h-45);ctx.fillStyle='#635bff';ctx.beginPath();ctx.arc(X,Y,3,0,Math.PI*2);ctx.fill()})}
 function renderGroupsLegacy(){return null}
 function renderMatrixGroup(id,items){document.getElementById(id).innerHTML=items.length?items.slice(0,8).map(x=>`<div class="tag">${esc(x.title)}</div>`).join(''):'<div style="font-size:12px;margin-top:8px">No data</div>'}
@@ -1474,8 +1509,28 @@ async function aiCaption(){
 }
 function renderPlanner(){
   const tb=document.getElementById('plannerTable');
-  if(!plans.length){tb.innerHTML='<tr><td colspan="8" class="empty">Belum ada planner. Klik “+ Add Idea” untuk membuat jadwal.</td></tr>';return}
-  tb.innerHTML=plans.map(x=>`<tr><td><b>${esc(x.date||'-')}</b>${x.time?`<div style="font-size:11px;color:#718096">${esc(x.time)}</div>`:''}</td><td><b>${esc(x.topic||x.title||'-')}</b><br><span style="font-size:11px;color:#718096">${esc(x.platform||'')}</span></td><td>${esc(x.pillar)}</td><td>${esc(x.format)}</td><td>${esc(x.hook)}</td><td>${esc(x.cta)}</td><td><span class="pill warn">${esc(x.status)}</span></td><td style="display:flex;gap:5px"><button class="btn light" onclick="editPlan('${x.id}')">Edit</button><button class="btn danger" onclick="deletePlan('${x.id}')">Delete</button></td></tr>`).join('');
+  if(!plans.length){tb.innerHTML='<tr><td colspan="10" class="empty">Belum ada planner. Klik “+ Add Idea” untuk membuat jadwal.</td></tr>';return}
+  tb.innerHTML=plans.map(x=>`<tr>
+    <td><b>${esc(x.date||'-')}</b>${x.time?`<div style="font-size:11px;color:#718096">${esc(x.time)}</div>`:''}</td>
+    <td><b>${esc(x.topic||x.title||'-')}</b><br><span style="font-size:11px;color:#718096">${esc(x.platform||'')}</span></td>
+    <td>${esc(x.pillar)}</td><td>${esc(x.format)}</td><td>${esc(x.hook)}</td><td>${esc(x.cta)}</td>
+    <td>${x.instagramUrl?`<a href="${esc(x.instagramUrl)}" target="_blank" rel="noopener" class="btn light" style="padding:6px 9px">↗ Open Feed</a>`:'<span class="mini-stat">—</span>'}</td>
+    <td><input type="checkbox" ${x.uploaded?'checked':''} onchange="togglePlanUploaded('${x.id}',this.checked)" aria-label="Tandai sudah upload"></td>
+    <td><span class="pill ${x.uploaded?'good':'warn'}">${x.uploaded?'Uploaded':'Belum Upload'} · ${esc(x.status)}</span></td>
+    <td style="display:flex;gap:5px"><button class="btn light" onclick="editPlan('${x.id}')">Edit</button><button class="btn danger" onclick="deletePlan('${x.id}')">Delete</button></td>
+  </tr>`).join('');
+}
+function renderRanking(){
+  const tb=document.getElementById('rankingTable'),count=document.getElementById('rankingCount');
+  const ranked=data.slice().sort((x,y)=>y.score-x.score||n(y.reach)-n(x.reach)||String(y.date||'').localeCompare(String(x.date||'')));
+  if(count)count.textContent=ranked.length+' konten';
+  if(!ranked.length){tb.innerHTML='<tr><td colspan="11" class="empty">Belum ada konten yang bisa diranking.</td></tr>';return}
+  tb.innerHTML=ranked.map((x,i)=>`<tr>
+    <td><b>#${i+1}</b></td><td><b>${esc(x.title)}</b></td><td>${esc(x.date||'-')}</td><td>${esc(x.platform)}</td><td>${esc(x.pillar)}</td><td>${esc(x.format)}</td>
+    <td>${n(x.reach).toLocaleString()}</td><td>${pct(x.er)}</td><td><b>${x.score}</b></td>
+    <td><span class="pill ${x.score>=75?'good':x.score>=50?'warn':'bad'}">${diagnosis(x,averages())}</span></td>
+    <td>${x.instagramUrl?`<a href="${esc(x.instagramUrl)}" target="_blank" rel="noopener" class="btn light" style="padding:6px 9px">↗ Open Feed</a>`:'<span class="mini-stat">—</span>'}</td>
+  </tr>`).join('');
 }
 function openPlanModal(plan){
   document.getElementById('planForm').reset();
@@ -1490,6 +1545,7 @@ function openPlanModal(plan){
   document.getElementById('planHook').value=plan?.hook||'Problem';
   document.getElementById('planCTA').value=plan?.cta||'Save';
   document.getElementById('planStatus').value=plan?.status||'idea';
+  document.getElementById('planInstagramUrl').value=plan?.instagramUrl||'';
   document.getElementById('planNotes').value=plan?.notes||'';
   document.getElementById('planModal').classList.add('open');
 }
@@ -1502,8 +1558,10 @@ async function savePlan(e){
   if(!topic){alert('Topic wajib diisi.');return}
   const selectedStatus=document.getElementById('planStatus').value;
   const status=selectedStatus==='published'?'publish':selectedStatus;
-  const payload={workspace_id:workspace.id,created_by:currentUser.id,planned_date:document.getElementById('planDate').value||null,planned_time:document.getElementById('planTime').value||null,platform:document.getElementById('planPlatform').value,title:topic,topic,pillar:document.getElementById('planPillar').value.trim()||'General',format:document.getElementById('planFormat').value,hook:document.getElementById('planHook').value,cta:document.getElementById('planCTA').value.trim()||'Save',status,notes:document.getElementById('planNotes').value.trim()||null};
-  const result=id?await db.from('content_plans').update(payload).eq('id',id).eq('workspace_id',workspace.id):await db.from('content_plans').insert(payload);
+  const instagramUrl=document.getElementById('planInstagramUrl').value.trim();
+  if(instagramUrl && !/^https?:\/\//i.test(instagramUrl)){alert('Link Instagram harus diawali http:// atau https://');return}
+  const payload={workspace_id:workspace.id,created_by:currentUser.id,planned_date:document.getElementById('planDate').value||null,planned_time:document.getElementById('planTime').value||null,platform:document.getElementById('planPlatform').value,title:topic,topic,pillar:document.getElementById('planPillar').value.trim()||'General',format:document.getElementById('planFormat').value,hook:document.getElementById('planHook').value,cta:document.getElementById('planCTA').value.trim()||'Save',status,notes:document.getElementById('planNotes').value.trim()||null,instagram_url:instagramUrl||null};
+  const result=id?await db.from('content_plans').update(payload).eq('id',id).eq('workspace_id',workspace.id):await db.from('content_plans').insert({...payload,uploaded:false});
   if(result.error){alert('Gagal menyimpan planner: '+result.error.message);return}
   closePlanModal(); await loadCloudData();
 }
@@ -1629,11 +1687,55 @@ async function inviteMember(){
 }
 function openModal(){document.getElementById('modal').classList.add('open');document.getElementById('contentForm').reset();document.getElementById('editId').value='';document.querySelector('#modal h2').textContent='Add Social Media Content';document.getElementById('fDate').value=new Date().toISOString().slice(0,10)}
 function closeModal(){document.getElementById('modal').classList.remove('open')}
-function editContent(id){const x=data.find(v=>String(v.id)===String(id));if(!x)return;document.getElementById('editId').value=x.id;fDate.value=x.date;fPlatform.value=x.platform;fTitle.value=x.title;fPillar.value=x.pillar;fFormat.value=x.format;fHook.value=x.hook;fCTA.value=x.cta;fReach.value=x.reach;fViews.value=x.views;fLikes.value=x.likes;fComments.value=x.comments;fShares.value=x.shares;fSaves.value=x.saves;fProfile.value=x.profile;fLeads.value=x.leads;document.querySelector('#modal h2').textContent='Edit Social Media Content';document.getElementById('modal').classList.add('open')}
-async function saveContent(e){e.preventDefault();if(!workspace)return;const editId=document.getElementById('editId').value;const x={id:editId||null,date:fDate.value,platform:fPlatform.value,title:fTitle.value.trim(),pillar:fPillar.value.trim(),format:fFormat.value,hook:fHook.value,cta:fCTA.value,reach:n(fReach.value),views:n(fViews.value),likes:n(fLikes.value),comments:n(fComments.value),shares:n(fShares.value),saves:n(fSaves.value),profile:n(fProfile.value),leads:n(fLeads.value)};calc(x);x.score=score(x,averages());x.diagnosis=diagnosis(x,averages());let error;if(editId){({error}=await db.from('contents').update(contentToDb(x)).eq('id',editId).eq('workspace_id',workspace.id))}else{({error}=await db.from('contents').insert(contentToDb(x)))}if(error){alert(error.message);return}closeModal();await loadCloudData();showPage('database')}
+function editContent(id){const x=data.find(v=>String(v.id)===String(id));if(!x)return;document.getElementById('editId').value=x.id;fDate.value=x.date;fPlatform.value=x.platform;fTitle.value=x.title;fPillar.value=x.pillar;fFormat.value=x.format;fHook.value=x.hook;fCTA.value=x.cta;fReach.value=x.reach;fViews.value=x.views;fLikes.value=x.likes;fComments.value=x.comments;fShares.value=x.shares;fSaves.value=x.saves;fProfile.value=x.profile;fLeads.value=x.leads;document.getElementById('fInstagramUrl').value=x.instagramUrl||'';document.querySelector('#modal h2').textContent='Edit Social Media Content';document.getElementById('modal').classList.add('open')}
+async function saveContent(e){e.preventDefault();if(!workspace)return;const editId=document.getElementById('editId').value;const x={id:editId||null,date:fDate.value,platform:fPlatform.value,title:fTitle.value.trim(),pillar:fPillar.value.trim(),format:fFormat.value,hook:fHook.value,cta:fCTA.value,reach:n(fReach.value),views:n(fViews.value),likes:n(fLikes.value),comments:n(fComments.value),shares:n(fShares.value),saves:n(fSaves.value),profile:n(fProfile.value),leads:n(fLeads.value),instagramUrl:document.getElementById('fInstagramUrl').value.trim(),uploaded:true};calc(x);x.score=score(x,averages());x.diagnosis=diagnosis(x,averages());let error;if(editId){({error}=await db.from('contents').update(contentToDb(x)).eq('id',editId).eq('workspace_id',workspace.id))}else{({error}=await db.from('contents').insert(contentToDb(x)))}if(error){alert(error.message);return}closeModal();await loadCloudData();showPage('database')}
 async function deleteContent(id){if(!confirm('Hapus konten ini?'))return;const {error}=await db.from('contents').delete().eq('id',id).eq('workspace_id',workspace.id);if(error)alert(error.message);else await loadCloudData()}
+async function createContentFromPlan(plan){
+  if(!workspace||!currentUser||!plan)return null;
+  const existing=plan.linkedContentId?data.find(x=>String(x.id)===String(plan.linkedContentId)):null;
+  const x={
+    id:existing?.id||null,date:plan.date,platform:plan.platform||'Instagram',title:plan.topic||plan.title||'Untitled',
+    pillar:plan.pillar||'General',topic:plan.topic||plan.title||'',format:plan.format||'Reels',hook:plan.hook||'Problem',cta:plan.cta||'Save',
+    reach:existing?.reach||0,views:existing?.views||0,likes:existing?.likes||0,comments:existing?.comments||0,shares:existing?.shares||0,saves:existing?.saves||0,
+    profile:existing?.profile||0,leads:existing?.leads||0,instagramUrl:plan.instagramUrl||existing?.instagramUrl||'',sourcePlanId:plan.id,uploaded:true
+  };
+  calc(x);x.score=score(x,averages());x.diagnosis=diagnosis(x,averages());
+  let result;
+  if(x.id){
+    result=await db.from('contents').update(contentToDb(x)).eq('id',x.id).eq('workspace_id',workspace.id).select().single();
+  }else{
+    result=await db.from('contents').insert(contentToDb(x)).select().single();
+  }
+  if(result.error)throw result.error;
+  return result.data?.id||x.id||null;
+}
+async function togglePlanUploaded(id,checked){
+  const plan=plans.find(p=>String(p.id)===String(id));
+  if(!plan)return;
+  try{
+    if(checked){
+      if(plan.platform==='Instagram' && !plan.instagramUrl){
+        alert('Tambahkan link Instagram Feed terlebih dahulu sebelum menandai sudah upload.');
+        renderPlanner();
+        return;
+      }
+      const linkedId=await createContentFromPlan(plan);
+      const {error}=await db.from('content_plans').update({uploaded:true,linked_content_id:linkedId,status:'publish',instagram_url:plan.instagramUrl||null}).eq('id',id).eq('workspace_id',workspace.id);
+      if(error)throw error;
+    }else{
+      const {error}=await db.from('content_plans').update({uploaded:false}).eq('id',id).eq('workspace_id',workspace.id);
+      if(error)throw error;
+    }
+    await loadCloudData();
+    showPage('planner');
+  }catch(err){
+    console.error('Planner upload toggle error:',err);
+    alert('Gagal memperbarui status upload: '+(err.message||'Terjadi kesalahan.'));
+    await loadCloudData();
+  }
+}
 async function deletePlan(id){if(!confirm('Hapus ide ini?'))return;const {error}=await db.from('content_plans').delete().eq('id',id).eq('workspace_id',workspace.id);if(error)alert(error.message);else await loadCloudData()}
-function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));const titles={dashboard:'Dashboard',database:'Content Database',analytics:'Content Analytics',matrix:'Performance Matrix',recommendations:'Recommendations',ai:'AI Studio',planner:'Content Planner',workspace:'Workspace'};document.getElementById('pageTitle').textContent=titles[id]||id}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));const titles={dashboard:'Dashboard',database:'Content Database',analytics:'Content Analytics',matrix:'Performance Matrix',recommendations:'Recommendations',ai:'AI Studio',planner:'Content Planner',ranking:'Content Ranking',workspace:'Workspace'};document.getElementById('pageTitle').textContent=titles[id]||id;if(id==='ranking')renderRanking()}
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function mobileNavigate(id){
   showPage(id);
@@ -1869,7 +1971,7 @@ async function importCSV(event){
 }
 // Matrix hook after every render
 const _oldRender=render;
-render=async function(){await _oldRender();renderGroupsMatrix(averages())};
+render=async function(){await _oldRender();renderGroupsMatrix(averages());renderRanking()};
 
 init();
 </script>
