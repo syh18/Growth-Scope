@@ -717,6 +717,13 @@ body{background:var(--bg)}
 <section id="database" class="page">
  <div class="card">
   <div class="section-title database-header"><div><h2>Content Database</h2><div style="font-size:12px;color:#718096;margin-top:4px">Import data CSV dengan auto-detection kolom.</div></div><div class="database-actions"><button class="btn light" type="button" onclick="downloadCSVTemplate()">⇩ CSV Template</button><button class="btn light" type="button" onclick="document.getElementById('importCSVFile').click()">⇧ Import CSV</button><button class="btn primary" type="button" onclick="openModal()">+ Add Content</button></div></div>
+  <div class="card" style="margin-bottom:12px;padding:12px 14px">
+   <div style="display:flex;align-items:end;gap:10px;flex-wrap:wrap">
+    <div class="field" style="min-width:220px;flex:1"><label>Filter Performance Matrix</label><select id="databaseMatrixFilter" onchange="renderTable(averages())"><option value="ALL">Semua Matrix</option><option value="SCALE">🔥 SCALE</option><option value="HIDDEN GEM">💎 HIDDEN GEM</option><option value="OPTIMIZE">⚠️ OPTIMIZE</option><option value="REWORK">🔄 REWORK</option></select></div>
+    <div class="field" style="min-width:180px;flex:1"><label>Filter Pillar</label><select id="databasePillarFilter" onchange="renderTable(averages())"><option value="ALL">Semua Pillar</option></select></div>
+    <button class="btn light" type="button" onclick="resetDatabaseFilters()">Reset Filter</button>
+   </div>
+  </div>
   <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Content</th><th>Pillar</th><th>Format</th><th>Instagram Feed</th><th>Reach</th><th>ER</th><th>Score</th><th>Diagnosis</th><th></th></tr></thead><tbody id="contentTable"></tbody></table></div>
  </div>
 </section>
@@ -1438,7 +1445,11 @@ async function render(){
 function renderTable(a){
   const tb=document.getElementById('contentTable');
   if(!data.length){tb.innerHTML='<tr><td colspan="10" class="empty">Belum ada data. Klik “Add Content” untuk mulai.</td></tr>';return}
-  const ranked=data.slice().sort((x,y)=>String(y.date||'').localeCompare(String(x.date||'')));
+  const matrixFilter=document.getElementById('databaseMatrixFilter')?.value||'ALL';
+  const pillarFilter=document.getElementById('databasePillarFilter')?.value||'ALL';
+  const filtered=data.filter(x=>(matrixFilter==='ALL'||diagnosis(x,a)===matrixFilter)&&(pillarFilter==='ALL'||x.pillar===pillarFilter));
+  if(!filtered.length){tb.innerHTML='<tr><td colspan="10" class="empty">Tidak ada konten yang sesuai filter.</td></tr>';return}
+  const ranked=filtered.slice().sort((x,y)=>String(y.date||'').localeCompare(String(x.date||'')));
   tb.innerHTML=ranked.map(x=>`<tr>
     <td>${esc(x.date)}</td>
     <td><b>${esc(x.title)}</b><br><span style="color:#718096">${esc(x.platform)}</span></td>
@@ -1558,6 +1569,7 @@ function renderPlanner(){
     <td style="display:flex;gap:5px"><button class="btn light" onclick="editPlan('${x.id}')">Edit</button><button class="btn danger" onclick="deletePlan('${x.id}')">Delete</button></td>
   </tr>`).join('');
 }
+function resetDatabaseFilters(){const m=document.getElementById('databaseMatrixFilter'),p=document.getElementById('databasePillarFilter');if(m)m.value='ALL';if(p)p.value='ALL';renderTable(averages())}
 function renderRanking(){
   const tb=document.getElementById('rankingTable'),count=document.getElementById('rankingCount');
   const ranked=data.slice().sort((x,y)=>y.score-x.score||n(y.reach)-n(x.reach)||String(y.date||'').localeCompare(String(x.date||'')));
