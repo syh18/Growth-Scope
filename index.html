@@ -1731,7 +1731,6 @@ function editContent(id){const x=data.find(v=>String(v.id)===String(id));if(!x)r
 async function saveContent(e){e.preventDefault();if(!workspace)return;const editId=document.getElementById('editId').value;const x={id:editId||null,date:fDate.value,platform:fPlatform.value,title:fTitle.value.trim(),pillar:fPillar.value.trim(),format:fFormat.value,hook:fHook.value,cta:fCTA.value,reach:n(fReach.value),views:n(fViews.value),likes:n(fLikes.value),comments:n(fComments.value),shares:n(fShares.value),saves:n(fSaves.value),profile:n(fProfile.value),leads:n(fLeads.value),instagramUrl:document.getElementById('fInstagramUrl').value.trim(),uploaded:true};calc(x);x.score=score(x,averages());x.diagnosis=diagnosis(x,averages());let error;if(editId){({error}=await db.from('contents').update(contentToDb(x)).eq('id',editId).eq('workspace_id',workspace.id))}else{({error}=await db.from('contents').insert(contentToDb(x)))}if(error){alert(error.message);return}closeModal();await loadCloudData();showPage('database')}
 async function deleteContent(id){if(!confirm('Hapus konten ini?'))return;const {error}=await db.from('contents').delete().eq('id',id).eq('workspace_id',workspace.id);if(error)alert(error.message);else await loadCloudData()}
 async function createContentFromPlan(plan){
-  if(!workspace||!currentUser||!plan)return null;
   const existing=plan.linkedContentId?data.find(x=>String(x.id)===String(plan.linkedContentId)):null;
   const x={
     id:existing?.id||null,date:plan.date,platform:plan.platform||'Instagram',title:plan.topic||plan.title||'Untitled',
@@ -1746,7 +1745,10 @@ async function createContentFromPlan(plan){
   }else{
     result=await db.from('contents').insert(contentToDb(x)).select().single();
   }
-  if(result.error)throw result.error;
+  if(result.error){
+    console.error('Content Database insert/update error:',result.error);
+    throw result.error;
+  }
   return result.data?.id||x.id||null;
 }
 async function togglePlanUploaded(id,checked){
