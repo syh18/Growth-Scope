@@ -992,9 +992,29 @@ function score(x,a){
   return Math.max(0,Math.min(100,Math.round(reach*.30+eng*.35+share*.15+save*.20)));
 }
 function diagnosis(x,a){const hr=x.reach>=a.reach,he=x.er>=a.er;return hr&&he?'SCALE':!hr&&he?'HIDDEN GEM':hr&&!he?'OPTIMIZE':'REWORK'}
-function dbToContent(r){return calc({id:r.id,date:r.content_date||'',platform:r.platform||'Instagram',title:r.title||'',pillar:r.pillar||'',topic:r.topic||'',format:r.format||'Reels',hook:r.hook||'Problem',cta:r.cta||'None',reach:n(r.reach),impressions:n(r.impressions),views:n(r.views),likes:n(r.likes),comments:n(r.comments),shares:n(r.shares),saves:n(r.saves),profile:n(r.profile_visits),linkClicks:n(r.link_clicks),leads:n(r.leads),notes:r.notes||'',instagramUrl:r.instagram_url||'',sourcePlanId:r.source_plan_id||null,uploaded:r.uploaded??true})}
-function contentToDb(x){return {workspace_id:workspace.id,created_by:currentUser.id,content_date:x.date||null,platform:x.platform,title:x.title,pillar:x.pillar,topic:x.topic||null,format:x.format,hook:x.hook,cta:x.cta,reach:n(x.reach),impressions:n(x.impressions),views:n(x.views),likes:n(x.likes),comments:n(x.comments),shares:n(x.shares),saves:n(x.saves),profile_visits:n(x.profile),link_clicks:n(x.linkClicks),leads:n(x.leads),engagement_rate:n(x.er),like_rate:n(x.likeRate),comment_rate:n(x.commentRate),share_rate:n(x.shareRate),save_rate:n(x.saveRate),content_score:n(x.score),diagnosis:x.diagnosis||null,notes:x.notes||null,instagram_url:x.instagramUrl||null,source_plan_id:x.sourcePlanId||null,uploaded:x.uploaded!==false}}
-function dbToPlan(r){return {id:r.id,date:r.planned_date||'',time:r.planned_time||'',platform:r.platform||'Instagram',title:r.title||'',topic:r.topic||'',pillar:r.pillar||'General',format:r.format||'Carousel',hook:r.hook||'Problem',cta:r.cta||'Save',status:r.status||'idea',notes:r.notes||'',instagramUrl:r.instagram_url||'',uploaded:!!r.uploaded,linkedContentId:r.linked_content_id||null}}
+const GS_META='__GROWTHSCOPE_META__';
+function readGsMeta(notes){
+  const s=String(notes||''); const i=s.lastIndexOf(GS_META);
+  if(i<0)return {};
+  try{return JSON.parse(s.slice(i+GS_META.length).trim())||{}}catch{return {}}
+}
+function writeGsMeta(notes,meta){
+  const clean=String(notes||'').split(GS_META)[0].trim();
+  return clean+(clean?'\n':'')+GS_META+JSON.stringify(meta||{});
+}
+function cleanGsNotes(notes){return String(notes||'').split(GS_META)[0].trim()||''}
+function dbToContent(r){
+  const meta=readGsMeta(r.notes);
+  return calc({id:r.id,date:r.content_date||'',platform:r.platform||'Instagram',title:r.title||'',pillar:r.pillar||'',topic:r.topic||'',format:r.format||'Reels',hook:r.hook||'Problem',cta:r.cta||'None',reach:n(r.reach),impressions:n(r.impressions),views:n(r.views),likes:n(r.likes),comments:n(r.comments),shares:n(r.shares),saves:n(r.saves),profile:n(r.profile_visits),linkClicks:n(r.link_clicks),leads:n(r.leads),notes:cleanGsNotes(r.notes),instagramUrl:r.instagram_url||meta.instagramUrl||'',sourcePlanId:r.source_plan_id||meta.sourcePlanId||null,uploaded:r.uploaded??meta.uploaded??true})
+}
+function contentToDb(x){
+  const meta={instagramUrl:x.instagramUrl||'',sourcePlanId:x.sourcePlanId||null,uploaded:x.uploaded!==false};
+  return {workspace_id:workspace.id,created_by:currentUser.id,content_date:x.date||null,platform:x.platform,title:x.title,pillar:x.pillar,topic:x.topic||null,format:x.format,hook:x.hook,cta:x.cta,reach:n(x.reach),impressions:n(x.impressions),views:n(x.views),likes:n(x.likes),comments:n(x.comments),shares:n(x.shares),saves:n(x.saves),profile_visits:n(x.profile),link_clicks:n(x.linkClicks),leads:n(x.leads),engagement_rate:n(x.er),like_rate:n(x.likeRate),comment_rate:n(x.commentRate),share_rate:n(x.shareRate),save_rate:n(x.saveRate),content_score:n(x.score),diagnosis:x.diagnosis||null,notes:writeGsMeta(x.notes,meta)}
+}
+function dbToPlan(r){
+  const meta=readGsMeta(r.notes);
+  return {id:r.id,date:r.planned_date||'',time:r.planned_time||'',platform:r.platform||'Instagram',title:r.title||'',topic:r.topic||'',pillar:r.pillar||'General',format:r.format||'Carousel',hook:r.hook||'Problem',cta:r.cta||'Save',status:r.status||'idea',notes:cleanGsNotes(r.notes),instagramUrl:r.instagram_url||meta.instagramUrl||'',uploaded:r.uploaded??meta.uploaded??false,linkedContentId:r.linked_content_id||meta.linkedContentId||null,_meta:meta}
+}
 function showMsg(id,text,type='error'){const el=document.getElementById(id);el.textContent=text;el.className='auth-msg show '+type}
 function showLogin(){document.getElementById('loginPanel').style.display='block';document.getElementById('registerPanel').style.display='none';document.getElementById('loginMsg').className='auth-msg';document.getElementById('registerMsg').className='auth-msg'}
 function showRegister(){document.getElementById('loginPanel').style.display='none';document.getElementById('registerPanel').style.display='block';document.getElementById('loginMsg').className='auth-msg';document.getElementById('registerMsg').className='auth-msg'}
@@ -1560,8 +1580,10 @@ async function savePlan(e){
   const status=selectedStatus==='published'?'publish':selectedStatus;
   const instagramUrl=document.getElementById('planInstagramUrl').value.trim();
   if(instagramUrl && !/^https?:\/\//i.test(instagramUrl)){alert('Link Instagram harus diawali http:// atau https://');return}
-  const payload={workspace_id:workspace.id,created_by:currentUser.id,planned_date:document.getElementById('planDate').value||null,planned_time:document.getElementById('planTime').value||null,platform:document.getElementById('planPlatform').value,title:topic,topic,pillar:document.getElementById('planPillar').value.trim()||'General',format:document.getElementById('planFormat').value,hook:document.getElementById('planHook').value,cta:document.getElementById('planCTA').value.trim()||'Save',status,notes:document.getElementById('planNotes').value.trim()||null,instagram_url:instagramUrl||null};
-  const result=id?await db.from('content_plans').update(payload).eq('id',id).eq('workspace_id',workspace.id):await db.from('content_plans').insert({...payload,uploaded:false});
+  const previous=plans.find(p=>String(p.id)===String(id));
+  const meta={instagramUrl:instagramUrl||'',uploaded:previous?.uploaded||false,linkedContentId:previous?.linkedContentId||null,previousStatus:previous?._meta?.previousStatus||previous?.status||status};
+  const payload={workspace_id:workspace.id,created_by:currentUser.id,planned_date:document.getElementById('planDate').value||null,planned_time:document.getElementById('planTime').value||null,platform:document.getElementById('planPlatform').value,title:topic,topic,pillar:document.getElementById('planPillar').value.trim()||'General',format:document.getElementById('planFormat').value,hook:document.getElementById('planHook').value,cta:document.getElementById('planCTA').value.trim()||'Save',status,notes:writeGsMeta(document.getElementById('planNotes').value.trim(),meta)};
+  const result=id?await db.from('content_plans').update(payload).eq('id',id).eq('workspace_id',workspace.id):await db.from('content_plans').insert(payload);
   if(result.error){alert('Gagal menyimpan planner: '+result.error.message);return}
   closePlanModal(); await loadCloudData();
 }
@@ -1720,10 +1742,13 @@ async function togglePlanUploaded(id,checked){
         return;
       }
       const linkedId=await createContentFromPlan(plan);
-      const {error}=await db.from('content_plans').update({uploaded:true,linked_content_id:linkedId,status:'publish',instagram_url:plan.instagramUrl||null}).eq('id',id).eq('workspace_id',workspace.id);
+      const meta={...(plan._meta||{}),instagramUrl:plan.instagramUrl||'',uploaded:true,linkedContentId:linkedId,previousStatus:plan._meta?.previousStatus||plan.status};
+      const {error}=await db.from('content_plans').update({status:'publish',notes:writeGsMeta(plan.notes,meta)}).eq('id',id).eq('workspace_id',workspace.id);
       if(error)throw error;
     }else{
-      const {error}=await db.from('content_plans').update({uploaded:false}).eq('id',id).eq('workspace_id',workspace.id);
+      const meta={...(plan._meta||{}),uploaded:false};
+      const restoreStatus=plan._meta?.previousStatus||'ready';
+      const {error}=await db.from('content_plans').update({status:restoreStatus,notes:writeGsMeta(plan.notes,meta)}).eq('id',id).eq('workspace_id',workspace.id);
       if(error)throw error;
     }
     await loadCloudData();
