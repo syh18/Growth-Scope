@@ -112,6 +112,9 @@
 
 
 
+
+/* Analytics responsive layout */
+.analytics-page{min-width:0;overflow:hidden}.analytics-page .grid{min-width:0}.analytics-page .card{min-width:0;overflow:hidden}.analytics-page .two{grid-template-columns:minmax(0,1fr) minmax(0,1fr);min-width:0}.analytics-page .two>.card{min-width:0;overflow:hidden}.analytics-page #pillarTable,.analytics-page #formatTable{width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}.analytics-page #pillarTable .table,.analytics-page #formatTable .table{min-width:620px}.analytics-page .section-title{min-width:0}.analytics-page .section-title h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:1100px) and (min-width:761px){.analytics-page .two{grid-template-columns:1fr}.analytics-page #pillarTable .table,.analytics-page #formatTable .table{min-width:620px}}@media(max-width:760px){.analytics-page .grid{grid-template-columns:1fr 1fr!important}.analytics-page .two{grid-template-columns:1fr!important}.analytics-page .card{padding:14px}.analytics-page #pillarTable .table,.analytics-page #formatTable .table{min-width:620px}.analytics-page .section-title h2{font-size:14px}}
 /* Global Modal Layer Fix */
 .modal{z-index:10000!important;isolation:isolate;background:rgba(8,13,27,.58);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
 .modal .modal-box{position:relative;z-index:10001;box-sizing:border-box;width:min(850px,calc(100vw - 40px));max-width:calc(100vw - 40px);max-height:90vh;overflow:auto;margin:0 auto;box-shadow:0 28px 80px rgba(15,23,42,.28)}
@@ -807,7 +810,7 @@ input,select,textarea,button{max-width:100%}
  </div>
 </section>
 
-<section id="analytics" class="page">
+<section id="analytics" class="page analytics-page">
  <div class="grid">
   <div class="card"><div class="label">AVG LIKE RATE</div><div class="value" id="aLike">0%</div></div>
   <div class="card"><div class="label">AVG COMMENT RATE</div><div class="value" id="aComment">0%</div></div>
