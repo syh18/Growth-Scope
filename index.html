@@ -567,7 +567,64 @@ body{background:var(--bg)}
 .planner-upload-check{width:18px;height:18px;accent-color:#635bff}
 .table a{color:#5148e8;text-decoration:none}
 .table a:hover{text-decoration:underline}
-</style></head>
+</style><style id="gs-responsive-fix">
+/* Responsive layout fix */
+html,body{max-width:100%;overflow-x:hidden}
+.main{min-width:0;box-sizing:border-box}
+.page{min-width:0;max-width:100%}
+.card{min-width:0;max-width:100%}
+.table-wrap{max-width:100%;overflow-x:auto}
+.table{min-width:760px}
+#calendarGrid{width:100%;overflow-x:auto}
+#calendarGrid>div{min-width:720px}
+.modal-box{box-sizing:border-box;max-width:min(850px,calc(100vw - 32px))}
+
+@media (max-width:1200px) and (min-width:951px){
+  .side{width:210px}
+  .main{margin-left:210px;width:calc(100% - 210px);padding:22px;max-width:none}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .two{grid-template-columns:minmax(0,1fr) minmax(300px,.8fr)}
+  .three{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .form{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .top{gap:14px;flex-wrap:wrap}
+  .actions{flex-wrap:wrap}
+}
+
+@media (max-width:950px) and (min-width:761px){
+  .side{width:70px;padding-left:10px;padding-right:10px}
+  .main{margin-left:70px;width:calc(100% - 70px);padding:18px}
+  .brand-logo .brand-text,.sidebar-section-label,.sidebar-tools button div{display:none}
+  .brand-logo{justify-content:center}
+  .nav button{font-size:0;text-align:center;padding:7px}
+  .nav-icon{margin:auto}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .two,.three{grid-template-columns:1fr}
+  .form{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .top{gap:10px;align-items:flex-start}
+  .top>div:first-child{min-width:0}
+  .actions{flex-wrap:wrap;justify-content:flex-end}
+  .actions .user-chip{min-width:0}
+  .user-name-top{max-width:110px}
+}
+
+@media (max-width:760px){
+  .main{padding-left:12px;padding-right:12px}
+  .top{width:auto!important}
+  .grid,.two,.three,.form,.matrix-guide,.score-guide{grid-template-columns:1fr!important}
+  .section-title{flex-wrap:wrap}
+  .section-title>div:last-child{max-width:100%;overflow-x:auto}
+  .table{min-width:760px}
+  #calendarGrid{overflow-x:auto;padding-bottom:4px}
+  #calendarGrid>div{min-width:720px}
+}
+
+/* Prevent long controls from forcing the viewport wider */
+input,select,textarea,button{max-width:100%}
+.field{min-width:0}
+.field input,.field select,.field textarea{box-sizing:border-box;min-width:0}
+.actions{min-width:0}
+.actions>*{min-width:0}
+</head>
 <body>
 <div id="authScreen">
   <div class="auth-box">
