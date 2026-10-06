@@ -724,7 +724,7 @@ body{background:var(--bg)}
     <button class="btn light" type="button" onclick="resetDatabaseFilters()">Reset Filter</button>
    </div>
   </div>
-  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Content</th><th>Pillar</th><th>Format</th><th>Instagram Feed</th><th>Reach</th><th>ER</th><th>Score</th><th>Diagnosis</th><th></th></tr></thead><tbody id="contentTable"></tbody></table></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Content</th><th>Pillar</th><th>Format</th><th>Instagram Feed</th><th>Preview Konten</th><th>Reach</th><th>ER</th><th>Score</th><th>Diagnosis</th><th></th></tr></thead><tbody id="contentTable"></tbody></table></div>
  </div>
 </section>
 
@@ -815,7 +815,7 @@ body{background:var(--bg)}
 <section id="planner" class="page">
  <div class="card">
   <div class="section-title planner-header"><div><h2>Content Planner</h2><div style="font-size:12px;color:#718096;margin-top:4px">Atur tanggal, jam, ide, format, hook, CTA, dan status konten.</div></div><div class="planner-actions"><button class="btn light" type="button" onclick="downloadPlannerCSVTemplate()">⇩ Download CSV Template</button><button class="btn light" type="button" onclick="document.getElementById('importCSVFile').click()">⇧ Import CSV</button><button class="btn primary" type="button" onclick="openPlanModal()">+ Add Idea</button></div></div>
-  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Topic</th><th>Pillar</th><th>Format</th><th>Hook</th><th>CTA</th><th>Instagram Feed</th><th>Upload</th><th>Status</th><th></th></tr></thead><tbody id="plannerTable"></tbody></table></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Topic</th><th>Pillar</th><th>Format</th><th>Hook</th><th>CTA</th><th>Instagram Feed</th><th>Preview Konten</th><th>Content Database</th><th>Upload</th><th>Status</th><th></th></tr></thead><tbody id="plannerTable"></tbody></table></div>
  </div>
 </section>
 
@@ -1457,6 +1457,7 @@ function renderTable(a){
     <td><b>${esc(x.title)}</b><br><span style="color:#718096">${esc(x.platform)}</span></td>
     <td>${esc(x.pillar)}</td><td>${esc(x.format)}</td>
     <td>${x.instagramUrl?`<a href="${esc(x.instagramUrl)}" target="_blank" rel="noopener" class="btn light" style="padding:6px 9px">↗ Open Feed</a>`:'<span class="mini-stat">Belum ada</span>'}</td>
+    <td>${x.previewUrl?`<a href="${esc(x.previewUrl)}" target="_blank" rel="noopener" class="btn light" style="padding:6px 9px">↗ Preview</a>`:'<span class="mini-stat">Belum ada</span>'}</td>
     <td>${n(x.reach).toLocaleString()}</td><td>${pct(x.er)}</td><td><b>${x.score}</b></td>
     <td><span class="pill ${x.score>=75?'good':x.score>=50?'warn':'bad'}">${diagnosis(x,a)}</span></td>
     <td style="display:flex;gap:5px"><button class="btn light" onclick="editContent('${x.id}')">Edit</button><button class="btn danger" onclick="deleteContent('${x.id}')">Delete</button></td>
