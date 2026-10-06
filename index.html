@@ -1160,7 +1160,7 @@ function contentToDb(x){
 }
 function dbToPlan(r){
   const meta=readGsMeta(r.notes);
-  return {id:r.id,date:r.planned_date||'',time:r.planned_time||'',platform:r.platform||'Instagram',title:r.title||'',topic:r.topic||'',pillar:r.pillar||'General',format:r.format||'Carousel',hook:r.hook||'Problem',cta:r.cta||'Save',status:(meta.uploaded?'publish':(r.status||'idea')),notes:cleanGsNotes(r.notes),instagramUrl:r.instagram_url||meta.instagramUrl||'',previewUrl:r.preview_url||meta.previewUrl||'',copywriting:meta.copywriting||'',slides:Array.isArray(meta.slides)?meta.slides:[],uploaded:r.uploaded??meta.uploaded??false,linkedContentId:r.linked_content_id||meta.linkedContentId||null,validationMinutes:Math.max(1,Number(meta.validationMinutes)||1440),publishedAt:meta.publishedAt||null,_meta:meta}
+  return {id:r.id,date:r.planned_date||'',time:r.planned_time||'',platform:r.platform||'Instagram',title:r.title||'',topic:r.topic||'',pillar:r.pillar||'General',format:r.format||'Carousel',hook:r.hook||'Problem',cta:r.cta||'Save',status:(meta.uploaded?'publish':(meta.uiStatus||r.status||'idea')),notes:cleanGsNotes(r.notes),instagramUrl:r.instagram_url||meta.instagramUrl||'',previewUrl:r.preview_url||meta.previewUrl||'',copywriting:meta.copywriting||'',slides:Array.isArray(meta.slides)?meta.slides:[],uploaded:r.uploaded??meta.uploaded??false,linkedContentId:r.linked_content_id||meta.linkedContentId||null,validationMinutes:Math.max(1,Number(meta.validationMinutes)||1440),publishedAt:meta.publishedAt||null,_meta:meta}
 }
 function showMsg(id,text,type='error'){const el=document.getElementById(id);el.textContent=text;el.className='auth-msg show '+type}
 function showLogin(){document.getElementById('loginPanel').style.display='block';document.getElementById('registerPanel').style.display='none';document.getElementById('loginMsg').className='auth-msg';document.getElementById('registerMsg').className='auth-msg'}
@@ -1836,7 +1836,10 @@ async function savePlan(e){
   const topic=document.getElementById('planTopic').value.trim();
   if(!topic){alert('Topic wajib diisi.');return}
   const selectedStatus=document.getElementById('planStatus').value;
-  const status=selectedStatus==='published'?'publish':selectedStatus;
+  // Supabase content_plans memiliki CHECK constraint yang tidak menerima
+  // beberapa status UI seperti "ready"/"publish". Simpan status UI di metadata
+  // dan gunakan "idea" sebagai nilai DB yang aman.
+  const statusForDb='idea';
   const instagramUrl=document.getElementById('planInstagramUrl').value.trim();
   const previewUrl=document.getElementById('planPreviewUrl').value.trim();
   const copywriting=document.getElementById('planCopywriting').value.trim();
@@ -1846,8 +1849,8 @@ async function savePlan(e){
   const previous=plans.find(p=>String(p.id)===String(id));
   const validationMinutes=validationToMinutes(document.getElementById('planValidationValue').value,document.getElementById('planValidationUnit').value);
   const reminderBefore=document.getElementById('planReminderBefore').value||'1h';
-  const meta={instagramUrl:instagramUrl||'',previewUrl:previewUrl||'',copywriting,slides,uploaded:previous?.uploaded||false,linkedContentId:previous?.linkedContentId||null,previousStatus:previous?._meta?.previousStatus||previous?.status||status,validationMinutes,publishedAt:previous?._meta?.publishedAt||null,reminderBefore};
-  const payload={workspace_id:workspace.id,created_by:currentUser.id,planned_date:document.getElementById('planDate').value||null,planned_time:document.getElementById('planTime').value||null,platform:document.getElementById('planPlatform').value,title:topic,topic,pillar:document.getElementById('planPillar').value.trim()||'General',format:document.getElementById('planFormat').value,hook:document.getElementById('planHook').value,cta:document.getElementById('planCTA').value.trim()||'Save',status,notes:writeGsMeta(document.getElementById('planNotes').value.trim(),meta)};
+  const meta={instagramUrl:instagramUrl||'',previewUrl:previewUrl||'',copywriting,slides,uploaded:previous?.uploaded||false,linkedContentId:previous?.linkedContentId||null,previousStatus:previous?._meta?.previousStatus||previous?.status||selectedStatus,uiStatus:selectedStatus,validationMinutes,publishedAt:previous?._meta?.publishedAt||null,reminderBefore};
+  const payload={workspace_id:workspace.id,created_by:currentUser.id,planned_date:document.getElementById('planDate').value||null,planned_time:document.getElementById('planTime').value||null,platform:document.getElementById('planPlatform').value,title:topic,topic,pillar:document.getElementById('planPillar').value.trim()||'General',format:document.getElementById('planFormat').value,hook:document.getElementById('planHook').value,cta:document.getElementById('planCTA').value.trim()||'Save',status:statusForDb,notes:writeGsMeta(document.getElementById('planNotes').value.trim(),meta)};
   const result=id?await db.from('content_plans').update(payload).eq('id',id).eq('workspace_id',workspace.id):await db.from('content_plans').insert(payload);
   if(result.error){alert('Gagal menyimpan planner: '+result.error.message);return}
   closePlanModal(); await loadCloudData();
