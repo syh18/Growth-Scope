@@ -1558,17 +1558,19 @@ async function aiCaption(){
 }
 function renderPlanner(){
   const tb=document.getElementById('plannerTable');
-  if(!plans.length){tb.innerHTML='<tr><td colspan="10" class="empty">Belum ada planner. Klik “+ Add Idea” untuk membuat jadwal.</td></tr>';return}
+  if(!plans.length){tb.innerHTML='<tr><td colspan="11" class="empty">Belum ada planner. Klik “+ Add Idea” untuk membuat jadwal.</td></tr>';return}
   tb.innerHTML=plans.map(x=>`<tr>
     <td><b>${esc(x.date||'-')}</b>${x.time?`<div style="font-size:11px;color:#718096">${esc(x.time)}</div>`:''}</td>
     <td><b>${esc(x.topic||x.title||'-')}</b><br><span style="font-size:11px;color:#718096">${esc(x.platform||'')}</span></td>
     <td>${esc(x.pillar)}</td><td>${esc(x.format)}</td><td>${esc(x.hook)}</td><td>${esc(x.cta)}</td>
     <td>${x.instagramUrl?`<a href="${esc(x.instagramUrl)}" target="_blank" rel="noopener" class="btn light" style="padding:6px 9px">↗ Open Feed</a>`:'<span class="mini-stat">—</span>'}</td>
+    <td>${x.linkedContentId?`<button class="btn light" type="button" style="padding:6px 9px" onclick="openLinkedContent('${x.linkedContentId}')">↗ Lihat Konten</button>`:'<span class="mini-stat">Belum terhubung</span>'}</td>
     <td><input type="checkbox" ${x.uploaded?'checked':''} onchange="togglePlanUploaded('${x.id}',this.checked)" aria-label="Tandai sudah upload"></td>
     <td><span class="pill ${x.uploaded?'good':'warn'}">${x.uploaded?'Uploaded':'Belum Upload'} · ${esc(x.status)}</span></td>
     <td style="display:flex;gap:5px"><button class="btn light" onclick="editPlan('${x.id}')">Edit</button><button class="btn danger" onclick="deletePlan('${x.id}')">Delete</button></td>
   </tr>`).join('');
 }
+function openLinkedContent(id){const x=data.find(v=>String(v.id)===String(id));if(!x){alert('Konten Database belum ditemukan.');return}showPage('database');setTimeout(()=>editContent(id),0)}
 function resetDatabaseFilters(){const m=document.getElementById('databaseMatrixFilter'),p=document.getElementById('databasePillarFilter');if(m)m.value='ALL';if(p)p.value='ALL';renderTable(averages())}
 function renderRanking(){
   const tb=document.getElementById('rankingTable'),count=document.getElementById('rankingCount');
