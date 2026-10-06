@@ -785,7 +785,7 @@ input,select,textarea,button{max-width:100%}
     <button class="btn light" type="button" onclick="resetDatabaseFilters()">Reset Filter</button>
    </div>
   </div>
-  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Content</th><th>Pillar</th><th>Format</th><th>Instagram Feed</th><th>Preview Konten</th><th>Reach</th><th>ER</th><th>Score</th><th>Diagnosis</th><th></th></tr></thead><tbody id="contentTable"></tbody></table></div>
+  <div id="plannerDeadlineOverview" class="deadline-overview"></div><div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Content</th><th>Pillar</th><th>Format</th><th>Instagram Feed</th><th>Preview Konten</th><th>Reach</th><th>ER</th><th>Score</th><th>Diagnosis</th><th></th></tr></thead><tbody id="contentTable"></tbody></table></div>
  </div>
 </section>
 
@@ -1666,6 +1666,20 @@ async function aiCaption(){
     box.innerHTML=`<h3>${esc(topic)}</h3><div id="generatedCaptionText" style="white-space:pre-wrap">${esc(full)}</div><div class="ai-actions"><button class="btn light" onclick="navigator.clipboard?.writeText(document.getElementById('generatedCaptionText').innerText)">Copy Caption</button></div>`;
   }catch(err){box.innerHTML=`<div class="notice" style="color:#991b1b">AI belum bisa digunakan: ${esc(err.message)}</div>`;}
 }
+function uploadDeadline(item){
+  if(!item?.date)return null;
+  const raw=String(item.date)+'T'+(item.time?String(item.time):'00:00');
+  const d=new Date(raw);
+  return Number.isNaN(d.getTime())?null:d;
+}
+function countdownParts(target){
+  if(!target)return {text:'Belum dijadwalkan',state:'none'};
+  const diff=target.getTime()-Date.now();
+  if(diff<=0)return {text:'WAKTUNYA!',state:'due'};
+  const total=Math.floor(diff/1000),d=Math.floor(total/86400),h=Math.floor((total%86400)/3600),m=Math.floor((total%3600)/60),sec=total%60;
+  const text=d>0?d+'h '+h+'j '+m+'m':h>0?h+'j '+m+'m '+sec+'d':m+'m '+sec+'d';
+  return {text,state:diff<=3600000?'soon':'normal'};
+}
 function validationCountdownText(item){
   const ready=validationReadyAt(item);
   if(!ready)return 'Belum upload';
@@ -1676,20 +1690,38 @@ function validationCountdownText(item){
   if(h>0)return h+'j '+m+'m '+sec+'d';
   return m+'m '+sec+'d';
 }
-function updateValidationCountdowns(){
+function updatePlannerDeadlines(){
+  document.querySelectorAll('[data-upload-countdown]').forEach(el=>{
+    const item=plans.find(p=>String(p.id)===String(el.dataset.uploadCountdown));if(!item)return;
+    const c=countdownParts(uploadDeadline(item));
+    el.className='planner-deadline '+c.state;
+    el.querySelector('.planner-deadline-main').textContent=c.text;
+    const d=uploadDeadline(item);
+    el.querySelector('.planner-deadline-sub').textContent=d?'Upload · '+d.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'Atur tanggal & jam';
+  });
   document.querySelectorAll('[data-validation-countdown]').forEach(el=>{
-    const id=el.getAttribute('data-validation-countdown');
-    const item=plans.find(p=>String(p.id)===String(id));
-    if(!item)return;
-    const ready=validationReadyAt(item);
+    const id=el.getAttribute('data-validation-countdown'),item=plans.find(p=>String(p.id)===String(id));if(!item)return;
     el.textContent=validationCountdownText(item);
+    const ready=validationReadyAt(item);
     el.style.color=ready&&ready.getTime()<=Date.now()?'#dc2626':(ready&&ready.getTime()-Date.now()<3600000?'#d97706':'#16a34a');
   });
+}
+function plannerDeadlineOverview(){
+  const upcoming=plans.map(p=>({p,d:uploadDeadline(p)})).filter(x=>x.d&&!x.p.uploaded&&x.d.getTime()>Date.now()).sort((a,b)=>a.d-b.d)[0];
+  const active=plans.filter(p=>p.uploaded&&validationReadyAt(p)&&validationReadyAt(p).getTime()>Date.now()).length;
+  const due=plans.filter(p=>{const d=uploadDeadline(p);return d&&!p.uploaded&&d.getTime()<=Date.now()}).length;
+  return {upcoming,active,due};
 }
 function renderPlanner(){
   const tb=document.getElementById('plannerTable');
   if(!plans.length){tb.innerHTML='<tr><td colspan="13" class="empty">Belum ada planner. Klik “+ Add Idea” untuk membuat jadwal.</td></tr>';return}
-  tb.innerHTML=plans.map(x=>`<tr>
+  const overview=plannerDeadlineOverview();
+  const oc=document.getElementById('plannerDeadlineOverview');
+  if(oc){
+    const c=overview.upcoming?countdownParts(overview.upcoming.d):null;
+    oc.innerHTML=`<div class="deadline-card"><div class="kicker">Next Upload</div><div class="big">${overview.upcoming?esc(overview.upcoming.p.topic||overview.upcoming.p.title||'Konten'):'Tidak ada'}</div><div class="small">${c?esc(c.text)+' · '+overview.upcoming.d.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'Semua jadwal aman'}</div></div><div class="deadline-card"><div class="kicker">Scheduled</div><div class="big">${plans.filter(p=>!p.uploaded&&uploadDeadline(p)).length}</div><div class="small">Konten menunggu upload</div></div><div class="deadline-card"><div class="kicker">Validating</div><div class="big">${overview.active}</div><div class="small">Sedang mengumpulkan data</div></div><div class="deadline-card"><div class="kicker">Overdue</div><div class="big">${overview.due}</div><div class="small">Belum ditandai upload</div></div>`;
+  }
+  tb.innerHTML=plans.map(x=>{const d=uploadDeadline(x),c=countdownParts(d);return `<tr>
     <td><b>${esc(x.date||'-')}</b>${x.time?`<div style="font-size:11px;color:#718096">${esc(x.time)}</div>`:''}</td>
     <td><b>${esc(x.topic||x.title||'-')}</b><br><span style="font-size:11px;color:#718096">${esc(x.platform||'')}</span></td>
     <td>${esc(x.pillar)}</td><td>${esc(x.format)}</td><td>${esc(x.hook)}</td><td>${esc(x.cta)}</td>
@@ -1698,10 +1730,10 @@ function renderPlanner(){
     <td>${x.linkedContentId?`<button class="btn light" type="button" style="padding:6px 9px" onclick="openLinkedContent('${x.linkedContentId}')">↗ Lihat Konten</button>`:'<span class="mini-stat">Belum terhubung</span>'}</td>
     <td><input type="checkbox" ${x.uploaded?'checked':''} onchange="togglePlanUploaded('${x.id}',this.checked)" aria-label="Tandai sudah upload"></td>
     <td><span class="pill ${x.uploaded?'good':'warn'}">${x.uploaded?'Uploaded':'Belum Upload'} · ${esc(x.status)}</span></td>
-    <td><b data-validation-countdown="${x.id}" style="font-size:11px;color:#7b8799;white-space:nowrap">${validationCountdownText(x)}</b></td>
+    <td><div data-upload-countdown="${x.id}" class="planner-deadline ${c.state}"><span class="planner-deadline-icon">${x.uploaded?'📊':'⏰'}</span><div><div class="planner-deadline-main">${esc(c.text)}</div><div class="planner-deadline-sub">${d?'Upload · '+d.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'Atur tanggal & jam'}</div></div></div></td>
     <td style="display:flex;gap:5px"><button class="btn light" onclick="editPlan('${x.id}')">Edit</button><button class="btn danger" onclick="deletePlan('${x.id}')">Delete</button></td>
-  </tr>`).join('');
-  updateValidationCountdowns();
+  </tr>`}).join('');
+  updatePlannerDeadlines();
 }
 function openLinkedContent(id){const x=data.find(v=>String(v.id)===String(id));if(!x){alert('Konten Database belum ditemukan.');return}showPage('database');setTimeout(()=>editContent(id),0)}
 function resetDatabaseFilters(){const m=document.getElementById('databaseMatrixFilter'),p=document.getElementById('databasePillarFilter');if(m)m.value='ALL';if(p)p.value='ALL';renderTable(averages())}
@@ -2223,7 +2255,7 @@ render=async function(){await _oldRender();renderGroupsMatrix(averages());render
 
 init();
 setInterval(checkValidationReminders,30000);
-setInterval(updateValidationCountdowns,1000);
+setInterval(updatePlannerDeadlines,1000);
 setTimeout(checkValidationReminders,3000);
 </script>
 </body>
