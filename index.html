@@ -1770,12 +1770,7 @@ async function togglePlanUploaded(id,checked){
   if(!plan)return;
   try{
     if(checked){
-      if(plan.platform==='Instagram' && !plan.instagramUrl){
-        alert('Tambahkan link Instagram Feed terlebih dahulu sebelum menandai sudah upload.');
-        renderPlanner();
-        return;
-      }
-      const linkedId=await createContentFromPlan(plan);
+      // Link Instagram bersifat opsional. Konten tetap bisa ditandai upload.\n      const linkedId=await createContentFromPlan(plan);
       const meta={...(plan._meta||{}),instagramUrl:plan.instagramUrl||'',uploaded:true,linkedContentId:linkedId,previousStatus:plan._meta?.previousStatus||plan.status};
       const {error}=await db.from('content_plans').update({notes:writeGsMeta(plan.notes,meta)}).eq('id',id).eq('workspace_id',workspace.id);
       if(error)throw error;
