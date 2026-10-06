@@ -951,6 +951,7 @@ body{background:var(--bg)}
    <div class="field" style="grid-column:1/-1"><label>Copywriting</label><textarea id="planCopywriting" rows="6" placeholder="Tulis caption / copywriting konten di sini..."></textarea></div>
    <div class="field"><label>Waktu Validasi</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="planValidationValue" type="number" min="1" value="24"><select id="planValidationUnit"><option value="hours">Jam</option><option value="minutes">Menit</option><option value="days">Hari</option></select></div><small style="display:block;color:#98a2b3;margin-top:5px">Durasi pengumpulan data setelah konten di-upload.</small></div>
    <div class="field"><label>Published At</label><input id="planPublishedAt" type="text" value="Otomatis saat Upload" readonly><small style="display:block;color:#98a2b3;margin-top:5px">Terisi otomatis ketika checkbox Upload dicentang.</small></div>
+   <div class="field"><label>Reminder Validasi</label><select id="planReminderBefore"><option value="1h">1 jam sebelum selesai</option><option value="30m">30 menit sebelum selesai</option><option value="15m">15 menit sebelum selesai</option><option value="none">Tidak ada reminder</option></select><small style="display:block;color:#98a2b3;margin-top:5px">Reminder muncul saat waktu validasi sudah mendekat.</small></div>
    <div class="field" id="planSlidesField" style="grid-column:1/-1;display:none">
     <label>Isi Slide <span style="font-weight:400;color:#98a2b3">(Carousel)</span></label>
     <div id="planSlidesList"></div>
@@ -1031,6 +1032,33 @@ const GS_META='__GROWTHSCOPE_META__';
 function validationToMinutes(value,unit){const v=Math.max(1,Number(value)||24);if(unit==='days')return Math.round(v*1440);if(unit==='minutes')return Math.round(v);return Math.round(v*60)}
 function minutesToValidation(minutes){const m=Math.max(1,Number(minutes)||1440);if(m%1440===0)return {value:m/1440,unit:'days'};if(m%60===0)return {value:m/60,unit:'hours'};return {value:m,unit:'minutes'}}
 function localDateTimeLabel(iso){if(!iso)return 'Otomatis saat Upload';const d=new Date(iso);return Number.isNaN(d.getTime())?'Otomatis saat Upload':d.toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'})}
+function reminderToMinutes(value){return value==='30m'?30:value==='15m'?15:value==='none'?0:60}
+function validationReadyAt(item){if(!item?.publishedAt)return null;const published=new Date(item.publishedAt).getTime();if(!Number.isFinite(published))return null;return new Date(published+Math.max(1,Number(item.validationMinutes)||1440)*60000)}
+function reminderAt(item){const ready=validationReadyAt(item);if(!ready)return null;return new Date(ready.getTime()-reminderToMinutes(item.reminderBefore||'1h')*60000)}
+function reminderLabel(v){return v==='30m'?'30 menit sebelum':v==='15m'?'15 menit sebelum':v==='none'?'Tidak ada':'1 jam sebelum'}
+function requestGrowthNotifications(){if('Notification' in window&&Notification.permission==='default')Notification.requestPermission().catch(()=>{})}
+function checkValidationReminders(){
+  if(!Array.isArray(plans)||!plans.length)return;
+  const now=Date.now();
+  plans.forEach(p=>{
+    if(!p.uploaded||!p._meta?.publishedAt||p._meta?.reminderBefore==='none')return;
+    const at=reminderAt({...p,reminderBefore:p._meta?.reminderBefore});
+    const ready=validationReadyAt({...p});
+    if(!at||!ready)return;
+    const key='gs_reminder_'+p.id+'_'+at.getTime();
+    if(now>=at.getTime()&&now<ready.getTime()&&!localStorage.getItem(key)){
+      localStorage.setItem(key,'1');
+      const msg='Validasi konten "'+(p.topic||p.title||'Konten')+'" akan selesai '+(ready.toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'}))+'. Siapkan Final Analysis.';
+      showValidationReminder(msg);
+      if('Notification' in window&&Notification.permission==='granted')new Notification('GrowthScope — Validasi Hampir Selesai',{body:msg});
+    }
+  });
+}
+function showValidationReminder(msg){
+  let el=document.getElementById('gsValidationReminder');
+  if(!el){el=document.createElement('div');el.id='gsValidationReminder';el.style.cssText='position:fixed;right:18px;bottom:18px;z-index:10000;max-width:390px;background:#fff;border:1px solid #e8ebf2;border-left:4px solid #635bff;border-radius:14px;padding:14px 16px;box-shadow:0 18px 50px rgba(15,23,42,.18);font-size:12px;line-height:1.5';document.body.appendChild(el)}
+  el.innerHTML='<b style="display:block;margin-bottom:5px">⏰ Validasi hampir selesai</b>'+esc(msg)+'<button onclick="this.parentElement.remove()" style="margin-top:9px;border:0;background:#635bff;color:#fff;padding:7px 10px;border-radius:8px;font-weight:700;cursor:pointer">Tutup</button>';
+}
 function readGsMeta(notes){
   const s=String(notes||''); const i=s.lastIndexOf(GS_META);
   if(i<0)return {};
@@ -1618,6 +1646,7 @@ function openPlanModal(plan){
   const validation=minutesToValidation(plan?.validationMinutes||1440);
   document.getElementById('planValidationValue').value=validation.value;
   document.getElementById('planValidationUnit').value=validation.unit;
+  document.getElementById('planReminderBefore').value=plan?._meta?.reminderBefore||'1h';
   document.getElementById('planPublishedAt').value=localDateTimeLabel(plan?._meta?.publishedAt);
   renderPlanSlides(plan?.slides||[]);
   updatePlanFormatFields();
@@ -1668,7 +1697,8 @@ async function savePlan(e){
   if(previewUrl && !/^https?:\/\//i.test(previewUrl)){alert('Link Preview harus diawali http:// atau https://');return}
   const previous=plans.find(p=>String(p.id)===String(id));
   const validationMinutes=validationToMinutes(document.getElementById('planValidationValue').value,document.getElementById('planValidationUnit').value);
-  const meta={instagramUrl:instagramUrl||'',previewUrl:previewUrl||'',copywriting,slides,uploaded:previous?.uploaded||false,linkedContentId:previous?.linkedContentId||null,previousStatus:previous?._meta?.previousStatus||previous?.status||status,validationMinutes,publishedAt:previous?._meta?.publishedAt||null};
+  const reminderBefore=document.getElementById('planReminderBefore').value||'1h';
+  const meta={instagramUrl:instagramUrl||'',previewUrl:previewUrl||'',copywriting,slides,uploaded:previous?.uploaded||false,linkedContentId:previous?.linkedContentId||null,previousStatus:previous?._meta?.previousStatus||previous?.status||status,validationMinutes,publishedAt:previous?._meta?.publishedAt||null,reminderBefore};
   const payload={workspace_id:workspace.id,created_by:currentUser.id,planned_date:document.getElementById('planDate').value||null,planned_time:document.getElementById('planTime').value||null,platform:document.getElementById('planPlatform').value,title:topic,topic,pillar:document.getElementById('planPillar').value.trim()||'General',format:document.getElementById('planFormat').value,hook:document.getElementById('planHook').value,cta:document.getElementById('planCTA').value.trim()||'Save',status,notes:writeGsMeta(document.getElementById('planNotes').value.trim(),meta)};
   const result=id?await db.from('content_plans').update(payload).eq('id',id).eq('workspace_id',workspace.id):await db.from('content_plans').insert(payload);
   if(result.error){alert('Gagal menyimpan planner: '+result.error.message);return}
@@ -1828,7 +1858,8 @@ async function togglePlanUploaded(id,checked){
       // Link Instagram bersifat opsional. Konten tetap bisa ditandai upload.\n      const linkedId=await createContentFromPlan(plan);
       plan.validationMinutes=Math.max(1,Number(plan.validationMinutes)||1440);
       const publishedAt=plan._meta?.publishedAt||new Date().toISOString();
-      const meta={...(plan._meta||{}),instagramUrl:plan.instagramUrl||'',previewUrl:plan.previewUrl||'',uploaded:true,linkedContentId:linkedId,previousStatus:plan._meta?.previousStatus||plan.status,publishedAt,validationMinutes:Math.max(1,Number(plan.validationMinutes)||1440)};
+      requestGrowthNotifications();
+      const meta={...(plan._meta||{}),instagramUrl:plan.instagramUrl||'',previewUrl:plan.previewUrl||'',uploaded:true,linkedContentId:linkedId,previousStatus:plan._meta?.previousStatus||plan.status,publishedAt,validationMinutes:Math.max(1,Number(plan.validationMinutes)||1440),reminderBefore:plan._meta?.reminderBefore||'1h'};
       const {error}=await db.from('content_plans').update({notes:writeGsMeta(plan.notes,meta)}).eq('id',id).eq('workspace_id',workspace.id);
       if(error)throw error;
     }else{
@@ -2084,6 +2115,8 @@ const _oldRender=render;
 render=async function(){await _oldRender();renderGroupsMatrix(averages());renderRanking()};
 
 init();
+setInterval(checkValidationReminders,30000);
+setTimeout(checkValidationReminders,3000);
 </script>
 </body>
 </html>
