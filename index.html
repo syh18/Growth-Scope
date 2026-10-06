@@ -948,6 +948,12 @@ body{background:var(--bg)}
    <div class="field"><label>Status</label><select id="planStatus"><option value="idea">Idea</option><option value="draft">Draft</option><option value="ready">Ready</option><option value="publish">Publish</option></select></div>
    <div class="field"><label>Instagram Feed Link <span style="font-weight:400;color:#98a2b3">(Opsional)</span></label><input id="planInstagramUrl" type="url" placeholder="https://www.instagram.com/p/..."></div>
    <div class="field"><label>Preview Konten <span style="font-weight:400;color:#98a2b3">(Opsional)</span></label><input id="planPreviewUrl" type="url" placeholder="Link Google Drive / Canva / preview"></div>
+   <div class="field" style="grid-column:1/-1"><label>Copywriting</label><textarea id="planCopywriting" rows="6" placeholder="Tulis caption / copywriting konten di sini..."></textarea></div>
+   <div class="field" id="planSlidesField" style="grid-column:1/-1;display:none">
+    <label>Isi Slide <span style="font-weight:400;color:#98a2b3">(Carousel)</span></label>
+    <div id="planSlidesList"></div>
+    <button class="btn light" type="button" onclick="addPlanSlide()" style="margin-top:8px">＋ Tambah Slide</button>
+   </div>
    <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea id="planNotes" placeholder="Catatan tambahan..."></textarea></div>
   </div>
   <div class="form-actions"><button type="button" class="btn light" onclick="closePlanModal()">Cancel</button><button class="btn primary">Save Planner</button></div>
@@ -1032,15 +1038,15 @@ function writeGsMeta(notes,meta){
 function cleanGsNotes(notes){return String(notes||'').split(GS_META)[0].trim()||''}
 function dbToContent(r){
   const meta=readGsMeta(r.notes);
-  return calc({id:r.id,date:r.content_date||'',platform:r.platform||'Instagram',title:r.title||'',pillar:r.pillar||'',topic:r.topic||'',format:r.format||'Reels',hook:r.hook||'Problem',cta:r.cta||'None',reach:n(r.reach),impressions:n(r.impressions),views:n(r.views),likes:n(r.likes),comments:n(r.comments),shares:n(r.shares),saves:n(r.saves),profile:n(r.profile_visits),linkClicks:n(r.link_clicks),leads:n(r.leads),notes:cleanGsNotes(r.notes),instagramUrl:r.instagram_url||meta.instagramUrl||'',previewUrl:r.preview_url||meta.previewUrl||'',sourcePlanId:r.source_plan_id||meta.sourcePlanId||null,uploaded:r.uploaded??meta.uploaded??true})
+  return calc({id:r.id,date:r.content_date||'',platform:r.platform||'Instagram',title:r.title||'',pillar:r.pillar||'',topic:r.topic||'',format:r.format||'Reels',hook:r.hook||'Problem',cta:r.cta||'None',reach:n(r.reach),impressions:n(r.impressions),views:n(r.views),likes:n(r.likes),comments:n(r.comments),shares:n(r.shares),saves:n(r.saves),profile:n(r.profile_visits),linkClicks:n(r.link_clicks),leads:n(r.leads),notes:cleanGsNotes(r.notes),instagramUrl:r.instagram_url||meta.instagramUrl||'',previewUrl:r.preview_url||meta.previewUrl||'',copywriting:meta.copywriting||'',slides:Array.isArray(meta.slides)?meta.slides:[],sourcePlanId:r.source_plan_id||meta.sourcePlanId||null,uploaded:r.uploaded??meta.uploaded??true})
 }
 function contentToDb(x){
-  const meta={instagramUrl:x.instagramUrl||'',previewUrl:x.previewUrl||'',sourcePlanId:x.sourcePlanId||null,uploaded:x.uploaded!==false};
+  const meta={instagramUrl:x.instagramUrl||'',previewUrl:x.previewUrl||'',copywriting:x.copywriting||'',slides:Array.isArray(x.slides)?x.slides:[],sourcePlanId:x.sourcePlanId||null,uploaded:x.uploaded!==false};
   return {workspace_id:workspace.id,created_by:currentUser.id,content_date:x.date||null,platform:x.platform,title:x.title,pillar:x.pillar,topic:x.topic||null,format:x.format,hook:x.hook,cta:x.cta,reach:n(x.reach),impressions:n(x.impressions),views:n(x.views),likes:n(x.likes),comments:n(x.comments),shares:n(x.shares),saves:n(x.saves),profile_visits:n(x.profile),link_clicks:n(x.linkClicks),leads:n(x.leads),engagement_rate:n(x.er),like_rate:n(x.likeRate),comment_rate:n(x.commentRate),share_rate:n(x.shareRate),save_rate:n(x.saveRate),content_score:n(x.score),diagnosis:x.diagnosis||null,notes:writeGsMeta(x.notes,meta)}
 }
 function dbToPlan(r){
   const meta=readGsMeta(r.notes);
-  return {id:r.id,date:r.planned_date||'',time:r.planned_time||'',platform:r.platform||'Instagram',title:r.title||'',topic:r.topic||'',pillar:r.pillar||'General',format:r.format||'Carousel',hook:r.hook||'Problem',cta:r.cta||'Save',status:(meta.uploaded?'publish':(r.status||'idea')),notes:cleanGsNotes(r.notes),instagramUrl:r.instagram_url||meta.instagramUrl||'',previewUrl:r.preview_url||meta.previewUrl||'',uploaded:r.uploaded??meta.uploaded??false,linkedContentId:r.linked_content_id||meta.linkedContentId||null,_meta:meta}
+  return {id:r.id,date:r.planned_date||'',time:r.planned_time||'',platform:r.platform||'Instagram',title:r.title||'',topic:r.topic||'',pillar:r.pillar||'General',format:r.format||'Carousel',hook:r.hook||'Problem',cta:r.cta||'Save',status:(meta.uploaded?'publish':(r.status||'idea')),notes:cleanGsNotes(r.notes),instagramUrl:r.instagram_url||meta.instagramUrl||'',previewUrl:r.preview_url||meta.previewUrl||'',copywriting:meta.copywriting||'',slides:Array.isArray(meta.slides)?meta.slides:[],uploaded:r.uploaded??meta.uploaded??false,linkedContentId:r.linked_content_id||meta.linkedContentId||null,_meta:meta}
 }
 function showMsg(id,text,type='error'){const el=document.getElementById(id);el.textContent=text;el.className='auth-msg show '+type}
 function showLogin(){document.getElementById('loginPanel').style.display='block';document.getElementById('registerPanel').style.display='none';document.getElementById('loginMsg').className='auth-msg';document.getElementById('registerMsg').className='auth-msg'}
@@ -1603,10 +1609,40 @@ function openPlanModal(plan){
   document.getElementById('planStatus').value=plan?.status||'idea';
   document.getElementById('planInstagramUrl').value=plan?.instagramUrl||'';
   document.getElementById('planPreviewUrl').value=plan?.previewUrl||'';
+  document.getElementById('planCopywriting').value=plan?.copywriting||'';
+  renderPlanSlides(plan?.slides||[]);
+  updatePlanFormatFields();
   document.getElementById('planNotes').value=plan?.notes||'';
   document.getElementById('planModal').classList.add('open');
 }
+document.getElementById('planFormat')?.addEventListener('change',updatePlanFormatFields);
 function closePlanModal(){document.getElementById('planModal').classList.remove('open')}
+function isFeedSlideFormat(format){return String(format||'').toLowerCase()==='carousel'}
+function updatePlanFormatFields(){
+  const format=document.getElementById('planFormat')?.value||'';
+  const field=document.getElementById('planSlidesField');
+  if(!field)return;
+  const show=isFeedSlideFormat(format);
+  field.style.display=show?'block':'none';
+  if(show && !document.querySelector('#planSlidesList .plan-slide')) addPlanSlide();
+}
+function renderPlanSlides(slides){
+  const list=document.getElementById('planSlidesList'); if(!list)return;
+  list.innerHTML='';
+  const arr=Array.isArray(slides)&&slides.length?slides:[''];
+  arr.forEach((value,i)=>appendPlanSlide(value,i+1));
+}
+function appendPlanSlide(value,index){
+  const list=document.getElementById('planSlidesList'); if(!list)return;
+  const row=document.createElement('div');
+  row.className='plan-slide';
+  row.style.cssText='display:grid;grid-template-columns:90px 1fr auto;gap:8px;align-items:start;margin-top:8px';
+  row.innerHTML='<div style="font-weight:800;padding:10px 0">Slide '+index+'</div><textarea class="plan-slide-input" rows="3" placeholder="Tulis isi Slide '+index+'...">'+esc(value||'')+'</textarea><button class="btn danger" type="button" onclick="this.parentElement.remove();renumberPlanSlides()">Hapus</button>';
+  list.appendChild(row);
+}
+function addPlanSlide(){const list=document.getElementById('planSlidesList');appendPlanSlide('',list?.children.length+1||1)}
+function renumberPlanSlides(){document.querySelectorAll('#planSlidesList .plan-slide').forEach((el,i)=>{const label=el.firstElementChild;if(label)label.textContent='Slide '+(i+1);const input=el.querySelector('.plan-slide-input');if(input)input.placeholder='Tulis isi Slide '+(i+1)+'...';})}
+function getPlanSlides(){return Array.from(document.querySelectorAll('#planSlidesList .plan-slide-input')).map(x=>x.value.trim()).filter(Boolean)}
 function editPlan(id){const p=plans.find(x=>String(x.id)===String(id));if(p)openPlanModal(p)}
 async function savePlan(e){
   e.preventDefault(); if(!workspace||!currentUser)return;
@@ -1617,10 +1653,12 @@ async function savePlan(e){
   const status=selectedStatus==='published'?'publish':selectedStatus;
   const instagramUrl=document.getElementById('planInstagramUrl').value.trim();
   const previewUrl=document.getElementById('planPreviewUrl').value.trim();
+  const copywriting=document.getElementById('planCopywriting').value.trim();
+  const slides=isFeedSlideFormat(document.getElementById('planFormat').value)?getPlanSlides():[];
   if(instagramUrl && !/^https?:\/\//i.test(instagramUrl)){alert('Link Instagram harus diawali http:// atau https://');return}
   if(previewUrl && !/^https?:\/\//i.test(previewUrl)){alert('Link Preview harus diawali http:// atau https://');return}
   const previous=plans.find(p=>String(p.id)===String(id));
-  const meta={instagramUrl:instagramUrl||'',previewUrl:previewUrl||'',uploaded:previous?.uploaded||false,linkedContentId:previous?.linkedContentId||null,previousStatus:previous?._meta?.previousStatus||previous?.status||status};
+  const meta={instagramUrl:instagramUrl||'',previewUrl:previewUrl||'',copywriting,slides,uploaded:previous?.uploaded||false,linkedContentId:previous?.linkedContentId||null,previousStatus:previous?._meta?.previousStatus||previous?.status||status};
   const payload={workspace_id:workspace.id,created_by:currentUser.id,planned_date:document.getElementById('planDate').value||null,planned_time:document.getElementById('planTime').value||null,platform:document.getElementById('planPlatform').value,title:topic,topic,pillar:document.getElementById('planPillar').value.trim()||'General',format:document.getElementById('planFormat').value,hook:document.getElementById('planHook').value,cta:document.getElementById('planCTA').value.trim()||'Save',status,notes:writeGsMeta(document.getElementById('planNotes').value.trim(),meta)};
   const result=id?await db.from('content_plans').update(payload).eq('id',id).eq('workspace_id',workspace.id):await db.from('content_plans').insert(payload);
   if(result.error){alert('Gagal menyimpan planner: '+result.error.message);return}
@@ -1757,7 +1795,7 @@ async function createContentFromPlan(plan){
     id:existing?.id||null,date:plan.date,platform:plan.platform||'Instagram',title:plan.topic||plan.title||'Untitled',
     pillar:plan.pillar||'General',topic:plan.topic||plan.title||'',format:plan.format||'Reels',hook:plan.hook||'Problem',cta:plan.cta||'Save',
     reach:existing?.reach||0,views:existing?.views||0,likes:existing?.likes||0,comments:existing?.comments||0,shares:existing?.shares||0,saves:existing?.saves||0,
-    profile:existing?.profile||0,leads:existing?.leads||0,instagramUrl:plan.instagramUrl||existing?.instagramUrl||'',previewUrl:plan.previewUrl||existing?.previewUrl||'',sourcePlanId:plan.id,uploaded:true
+    profile:existing?.profile||0,leads:existing?.leads||0,instagramUrl:plan.instagramUrl||existing?.instagramUrl||'',previewUrl:plan.previewUrl||existing?.previewUrl||'',copywriting:plan.copywriting||existing?.copywriting||'',slides:plan.slides||existing?.slides||[],sourcePlanId:plan.id,uploaded:true
   };
   calc(x);x.score=score(x,averages());x.diagnosis=diagnosis(x,averages());
   let result;
