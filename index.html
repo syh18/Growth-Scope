@@ -1761,7 +1761,7 @@ async function togglePlanUploaded(id,checked){
       }
       const linkedId=await createContentFromPlan(plan);
       const meta={...(plan._meta||{}),instagramUrl:plan.instagramUrl||'',uploaded:true,linkedContentId:linkedId,previousStatus:plan._meta?.previousStatus||plan.status};
-      const {error}=await db.from('content_plans').update({status:'publish',notes:writeGsMeta(plan.notes,meta)}).eq('id',id).eq('workspace_id',workspace.id);
+      const {error}=await db.from('content_plans').update({status:'ready',notes:writeGsMeta(plan.notes,meta)}).eq('id',id).eq('workspace_id',workspace.id);
       if(error)throw error;
     }else{
       const meta={...(plan._meta||{}),uploaded:false};
