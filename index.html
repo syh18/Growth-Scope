@@ -717,7 +717,7 @@ body{background:var(--bg)}
 <section id="database" class="page">
  <div class="card">
   <div class="section-title database-header"><div><h2>Content Database</h2><div style="font-size:12px;color:#718096;margin-top:4px">Import data CSV dengan auto-detection kolom.</div></div><div class="database-actions"><button class="btn light" type="button" onclick="downloadCSVTemplate()">⇩ CSV Template</button><button class="btn light" type="button" onclick="document.getElementById('importCSVFile').click()">⇧ Import CSV</button><button class="btn primary" type="button" onclick="openModal()">+ Add Content</button></div></div>
-  <div class="table-wrap"><table class="table"><thead><tr><th>Rank</th><th>Date</th><th>Content</th><th>Pillar</th><th>Format</th><th>Instagram Feed</th><th>Reach</th><th>ER</th><th>Score</th><th>Diagnosis</th><th></th></tr></thead><tbody id="contentTable"></tbody></table></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Content</th><th>Pillar</th><th>Format</th><th>Instagram Feed</th><th>Reach</th><th>ER</th><th>Score</th><th>Diagnosis</th><th></th></tr></thead><tbody id="contentTable"></tbody></table></div>
  </div>
 </section>
 
@@ -1437,10 +1437,10 @@ async function render(){
 }
 function renderTable(a){
   const tb=document.getElementById('contentTable');
-  if(!data.length){tb.innerHTML='<tr><td colspan="11" class="empty">Belum ada data. Klik “Add Content” untuk mulai.</td></tr>';return}
-  const ranked=data.slice().sort((x,y)=>y.score-x.score||String(y.date||'').localeCompare(String(x.date||'')));
-  tb.innerHTML=ranked.map((x,i)=>`<tr>
-    <td><b>#${i+1}</b></td><td>${esc(x.date)}</td>
+  if(!data.length){tb.innerHTML='<tr><td colspan="10" class="empty">Belum ada data. Klik “Add Content” untuk mulai.</td></tr>';return}
+  const ranked=data.slice().sort((x,y)=>String(y.date||'').localeCompare(String(x.date||'')));
+  tb.innerHTML=ranked.map(x=>`<tr>
+    <td>${esc(x.date)}</td>
     <td><b>${esc(x.title)}</b><br><span style="color:#718096">${esc(x.platform)}</span></td>
     <td>${esc(x.pillar)}</td><td>${esc(x.format)}</td>
     <td>${x.instagramUrl?`<a href="${esc(x.instagramUrl)}" target="_blank" rel="noopener" class="btn light" style="padding:6px 9px">↗ Open Feed</a>`:'<span class="mini-stat">Belum ada</span>'}</td>
