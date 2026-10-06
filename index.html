@@ -1031,7 +1031,7 @@ function contentToDb(x){
 }
 function dbToPlan(r){
   const meta=readGsMeta(r.notes);
-  return {id:r.id,date:r.planned_date||'',time:r.planned_time||'',platform:r.platform||'Instagram',title:r.title||'',topic:r.topic||'',pillar:r.pillar||'General',format:r.format||'Carousel',hook:r.hook||'Problem',cta:r.cta||'Save',status:r.status||'idea',notes:cleanGsNotes(r.notes),instagramUrl:r.instagram_url||meta.instagramUrl||'',uploaded:r.uploaded??meta.uploaded??false,linkedContentId:r.linked_content_id||meta.linkedContentId||null,_meta:meta}
+  return {id:r.id,date:r.planned_date||'',time:r.planned_time||'',platform:r.platform||'Instagram',title:r.title||'',topic:r.topic||'',pillar:r.pillar||'General',format:r.format||'Carousel',hook:r.hook||'Problem',cta:r.cta||'Save',status:(meta.uploaded?'publish':(r.status||'idea')),notes:cleanGsNotes(r.notes),instagramUrl:r.instagram_url||meta.instagramUrl||'',uploaded:r.uploaded??meta.uploaded??false,linkedContentId:r.linked_content_id||meta.linkedContentId||null,_meta:meta}
 }
 function showMsg(id,text,type='error'){const el=document.getElementById(id);el.textContent=text;el.className='auth-msg show '+type}
 function showLogin(){document.getElementById('loginPanel').style.display='block';document.getElementById('registerPanel').style.display='none';document.getElementById('loginMsg').className='auth-msg';document.getElementById('registerMsg').className='auth-msg'}
