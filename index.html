@@ -1803,7 +1803,7 @@ async function installGrowthScope(){
 }
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('PWA service worker:',err));
+    navigator.serviceWorker.register('./sw.js?ver=20261006').catch(err=>console.warn('PWA service worker:',err));
   });
 }
 updateInstallButton();
